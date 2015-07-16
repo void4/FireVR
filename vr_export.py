@@ -22,7 +22,7 @@ def write_html(scene, filepath, path_mode):
 	doc(html)
 
 	head = Tag("head")
-	head(Tag("meta", charset="utf-8", single=True))
+	head(Tag("meta", attr=[("charset","utf-8")], single=True))
 	html(head)
 
 	body = Tag("body")
@@ -32,9 +32,9 @@ def write_html(scene, filepath, path_mode):
 	assets = Tag("Assets")
 	
 	if scene.useroom!="None":
-		room = Tag("Room", use_local_asset=scene.useroom, visible=str(scene.useroomvisible).lower(), fwd="0 0 1")
+		room = Tag("Room", attr=[("use_local_asset",scene.useroom), ("visible",str(scene.useroomvisible).lower()), ("fwd","0 0 1"), ("col",v2s(scene.useroomcolor))])
 	else:
-		room = Tag("Room", fwd="0 0 1")
+		room = Tag("Room", attr=[("fwd","0 0 1")])
 	
 	useractive = scene.objects.active
 	
@@ -46,21 +46,24 @@ def write_html(scene, filepath, path_mode):
 			o.location = [0, 0, 0]
 			bpy.ops.object.select_pattern(pattern=o.name, extend=False)
 			bpy.ops.export_scene.obj(filepath=os.path.join(filepath, o.name+".obj"), use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
-			ob = Tag("AssetObject", id=o.name, src=o.name+".obj", mtl=o.name+".mtl")
+			ob = Tag("AssetObject", attr=[("id", o.name), ("src",o.name+".obj"), ("mtl",o.name+".mtl")])
 			assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, id=o.name, collision_id=o.name, pos=p2s(loc), scale=v2s(o.scale), xdir=rot[0], ydir=rot[1], zdir=rot[2]))
+			room(Tag("Object", single=False, attr=[("id", o.name), ("collision_id", o.name), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
 			o.location = loc
 		elif o.type=="FONT":
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
-				room(Tag("Link", pos=v2s(o.location), scale="1.8 3.2 1", url=o.data.body, title=o.name))
-	
+				room(Tag("Link", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name)]))
+			else:
+				text = Tag("Text", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("title",o.name)])
+				text.sub.append(o.data.body)
+				room(text)
+				
 	scene.objects.active = useractive
 	
 	fire(assets)
 	fire(room)
 	body(fire)
-
 	file = open(os.path.join(filepath,"index.html"), mode="w", encoding="utf8", newline="\n")
 	fw = file.write
 	doc.write(fw, indent="")

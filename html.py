@@ -1,31 +1,20 @@
-# IPFS-VR by void
-
-# To the extent possible under law, the person who associated CC0 with
-# IPFS-VR has waived all copyright and related or neighboring rights
-# to IPFS-VR.
-
-# You should have received a copy of the CC0 legalcode along with this
-# work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 from io import StringIO
 from functools import cmp_to_key
+from collections import OrderedDict
 
 class Tag:
-	def __init__(self, tag, **kwargs):
+	def __init__(self, tag, attr=[], single=False):
 		self.tag = tag
-		if not "sub" in kwargs.keys():
-			self.sub = []
-		if not "single" in kwargs.keys():
-			self.single = False
-		self.__dict__.update(kwargs)
+		self.attr = attr
+		self.sub = []
+		self.single = single
 		
-	def write(self, w, nice=True, level=0, indent="  "):
+	def write(self, w, nice=True, level=0, indent="  ", loop=0):
 		if nice:
 			w(indent*level)
 			
 		w("<%s" % self.tag)
 		
-		#TODO use OrderedDict argument instead of **kwargs as Tag() argument
 		def cmpfunc(x,y):
 			if x[0]=="id":
 				return -1
@@ -34,9 +23,8 @@ class Tag:
 			#TODO order strings here?
 			return 0
 		
-		for k,v in sorted(self.__dict__.items(), key=cmp_to_key(cmpfunc)):
-			if k not in ["tag", "sub", "single", "level", "indent"]:
-				w(" %s=\"%s\"" % (k, str(v)))
+		for k,v in sorted(self.attr, key=cmp_to_key(cmpfunc)):
+			w(" %s=\"%s\"" % (k, str(v)))
 		
 		if len(self.sub)==0 and not self.single:
 			w(" />")
@@ -47,8 +35,8 @@ class Tag:
 			
 		if nice and len(self.sub)>0:
 			w("\n")
-				
-		for i, s in enumerate(self.sub):
+
+		for s in self.sub:
 			if isinstance(s, str):
 				if nice:
 					w(indent*(level+1))
@@ -56,7 +44,8 @@ class Tag:
 				if nice:
 					w("\n")
 			else:
-				s.write(w, nice, level+(0 if self.single else 1), indent)
+				#if loop<n: prevent recursion
+				s.write(w, nice, level+(0 if self.single else 1), indent, loop+1)
 				
 		if nice and not self.single:
 			w(indent*(level))
@@ -67,6 +56,7 @@ class Tag:
 			
 		
 	def __call__(self, tag):
+		print("Adding %s to %s" % (tag.tag, self.tag))
 		self.sub.append(tag)
 		
 	def __repr__(self):

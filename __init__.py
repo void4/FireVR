@@ -28,7 +28,9 @@ from bpy.types import (
 from bpy.props import (
 	StringProperty,
 	BoolProperty,
-	EnumProperty
+	EnumProperty,
+	FloatProperty,
+	FloatVectorProperty
 	)
 
 from bpy_extras.io_utils import (
@@ -60,6 +62,8 @@ class ToolPanel(Panel):
 			
 		if context.scene.roomhash:
 			self.layout.prop(context.scene, "roomhash")
+			
+		self.layout.prop(context.scene, "useroomcolor")
 
 
 bpy.types.Scene.usewindowmode = BoolProperty(name="JanusVR window mode", default=False)
@@ -71,6 +75,7 @@ rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "roo
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
 bpy.types.Scene.useroom = EnumProperty(name="Room", default="room_plane", items=roomlist)
 bpy.types.Scene.useroomvisible = BoolProperty(name="Room visible", default=True)
+bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Room color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
