@@ -53,10 +53,18 @@ class ToolPanel(Panel):
 		if context.scene.roomhash:
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
+
+class SettingsPanel(Panel):
+	bl_label = "Settings"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	
+	def draw(self, context):
 		self.layout.operator("export_path.html")
 		self.layout.operator("set_path.janus")
 		self.layout.prop(context.scene, "usegateway")
 		self.layout.prop(context.scene, "usefullscreen")
+
 
 class RoomPanel(Panel):
 	bl_label = "Room"
@@ -68,8 +76,8 @@ class RoomPanel(Panel):
 		
 		if context.scene.useroom!="None":
 			self.layout.prop(context.scene, "useroomvisible")
+			self.layout.prop(context.scene, "useroomcolor")
 			
-		self.layout.prop(context.scene, "useroomcolor")
 		self.layout.prop(context.scene, "useroomgravity")
 		self.layout.prop(context.scene, "useroomwalkspeed")
 		self.layout.prop(context.scene, "useroomrunspeed")

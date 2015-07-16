@@ -34,17 +34,21 @@ def write_html(scene, filepath, path_mode):
 	fire = Tag("FireBoxRoom")
 	assets = Tag("Assets")
 	
-	if scene.useroom!="None":
-		room = Tag("Room", attr=[("use_local_asset",scene.useroom),
-		("visible",str(scene.useroomvisible).lower()),
+	attr=[
 		("fwd","0 0 1"),
-		("col",v2s(scene.useroomcolor)),
 		("gravity", f2s(scene.useroomgravity)),
 		("walk_speed", f2s(scene.useroomwalkspeed)),
 		("run_speed", f2s(scene.useroomrunspeed)),
-		])
-	else:
-		room = Tag("Room", attr=[("fwd","0 0 1")])
+		]
+	
+	if scene.useroom!="None":
+		attr += [
+		("use_local_asset",scene.useroom),
+		("visible",str(scene.useroomvisible).lower()),
+		("col",v2s(scene.useroomcolor)),
+		]
+		
+	room = Tag("Room", attr)
 	
 	useractive = scene.objects.active
 	
