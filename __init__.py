@@ -70,6 +70,9 @@ class RoomPanel(Panel):
 			self.layout.prop(context.scene, "useroomvisible")
 			
 		self.layout.prop(context.scene, "useroomcolor")
+		self.layout.prop(context.scene, "useroomgravity")
+		self.layout.prop(context.scene, "useroomwalkspeed")
+		self.layout.prop(context.scene, "useroomrunspeed")
 
 bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
 
@@ -81,6 +84,9 @@ roomlist = tuple(tuple([room, room, room]) for room in rooms)
 bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
 bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
 bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=9.8, min=-100, max=100)
+bpy.types.Scene.useroomwalkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
+bpy.types.Scene.useroomrunspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
@@ -204,7 +210,7 @@ class VRJanus(Operator):
 		self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
 		
 		args = []
-		if context.scene.usefullscreen:
+		if not context.scene.usefullscreen:
 			args.append("-window")
 			
 		januspath = hasv(context, "januspath")
