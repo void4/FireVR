@@ -50,32 +50,37 @@ class ToolPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.operator("fire.html", icon_value=custom_icons["custom_icon"].icon_id)
+		if context.scene.roomhash:
+			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 		self.layout.operator("export_path.html")
 		self.layout.operator("set_path.janus")
 		self.layout.prop(context.scene, "usegateway")
-		self.layout.prop(context.scene, "usewindowmode")
+		self.layout.prop(context.scene, "usefullscreen")
+
+class RoomPanel(Panel):
+	bl_label = "Room"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	
+	def draw(self, context):
 		self.layout.prop(context.scene, "useroom")
 		
 		if context.scene.useroom!="None":
 			self.layout.prop(context.scene, "useroomvisible")
 			
-		if context.scene.roomhash:
-			self.layout.prop(context.scene, "roomhash")
-			
 		self.layout.prop(context.scene, "useroomcolor")
 
-
-bpy.types.Scene.usewindowmode = BoolProperty(name="JanusVR window mode", default=False)
+bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
 
 bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=True)
-bpy.types.Scene.roomhash = StringProperty(name="Room URL", default="")
+bpy.types.Scene.roomhash = StringProperty(name="", default="")
 
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
-bpy.types.Scene.useroom = EnumProperty(name="Room", default="room_plane", items=roomlist)
-bpy.types.Scene.useroomvisible = BoolProperty(name="Room visible", default=True)
-bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Room color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
+bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
+bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
@@ -199,7 +204,7 @@ class VRJanus(Operator):
 		self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
 		
 		args = []
-		if context.scene.usewindowmode:
+		if context.scene.usefullscreen:
 			args.append("-window")
 			
 		januspath = hasv(context, "januspath")
