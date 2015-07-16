@@ -1,12 +1,3 @@
-# IPFS-VR by void
-
-# To the extent possible under law, the person who associated CC0 with
-# IPFS-VR has waived all copyright and related or neighboring rights
-# to IPFS-VR.
-
-# You should have received a copy of the CC0 legalcode along with this
-# work. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
 from subprocess import Popen, call, check_output, STDOUT, PIPE, CalledProcessError
 from tempfile import TemporaryFile, NamedTemporaryFile, tempdir
 import base64
