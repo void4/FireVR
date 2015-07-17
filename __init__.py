@@ -3,9 +3,9 @@ bl_info = {
 	"author" : "void",
 	"version" : (0, 1),
 	"blender" : (2, 75, 0),
-	"location" : "View3D > Add > Mesh",
-	"description": "Converts the scene into FireBox HTML and publishes it to IPFS",
-	"wiki_url" : "",
+	"location" : "View3D > Toolshelf > Misc",
+	"description": "Exports the scene into FireBox HTML and publishes it to IPFS",
+	"wiki_url" : "https://github.com/void4/FireVR",
 	"category" : "Import-Export"
 }
 
