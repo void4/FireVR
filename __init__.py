@@ -57,7 +57,7 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
-bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=True)
+bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=False)
 bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
 
 bpy.types.Scene.useipns = BoolProperty(name="IPNS", default=False)

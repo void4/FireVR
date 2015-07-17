@@ -54,6 +54,8 @@ def write_html(scene, filepath, path_mode):
 	
 	useractive = scene.objects.active
 	
+	exportedmeshes = []
+	
 	for o in bpy.data.objects:
 		if o.type=="MESH":
 			scene.objects.active = o
@@ -61,11 +63,13 @@ def write_html(scene, filepath, path_mode):
 			loc = o.location.copy()
 			o.location = [0, 0, 0]
 			bpy.ops.object.select_pattern(pattern=o.name, extend=False)
-			bpy.ops.export_scene.obj(filepath=os.path.join(filepath, o.name+".obj"), use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
-			ob = Tag("AssetObject", attr=[("id", o.name), ("src",o.name+".obj"), ("mtl",o.name+".mtl")])
+			if not o.data in exportedmeshes:
+				bpy.ops.export_scene.obj(filepath=os.path.join(filepath, o.data.name+".obj"), use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
+				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+".obj"), ("mtl",o.data.name+".mtl")])
+				exportedmeshes.append(o.data.name)
 			assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, attr=[("id", o.name), ("collision_id", o.name), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
+			room(Tag("Object", single=False, attr=[("id", o.data.name), ("collision_id", o.data.name), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
 			o.location = loc
 		elif o.type=="FONT":
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
