@@ -67,8 +67,12 @@ def write_html(scene, filepath, path_mode):
 			o.location = [0, 0, 0]
 			bpy.ops.object.select_pattern(pattern=o.name, extend=False)
 			if not o.data.name in exportedmeshes:
-				bpy.ops.export_scene.obj(filepath=os.path.join(filepath, o.data.name+".obj"), use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
-				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+".obj"), ("mtl",o.data.name+".mtl")])
+				epath = os.path.join(filepath, o.data.name+scene.useobjectexport)
+				if scene.useobjectexport==".obj":
+					bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
+				else:
+					bpy.ops.wm.collada_export(filepath=epath, selected=True, )
+				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.useobjectexport), ("mtl",o.data.name+".mtl")])
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]

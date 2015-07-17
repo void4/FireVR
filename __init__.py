@@ -77,7 +77,16 @@ class SettingsPanel(Panel):
 		if context.scene.useipns:
 			self.layout.prop(context.scene, "useipnsname")
 
+bpy.types.Scene.useobjectexport = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 
+class ObjectPanel(Panel):
+	bl_label = "Objects"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	
+	def draw(self, context):
+		self.layout.prop(context.scene, "useobjectexport")
+		
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
 bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
@@ -108,7 +117,7 @@ bpy.types.Scene.useserver = StringProperty(name="", default="babylon.vrsites.com
 bpy.types.Scene.useserverport = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
 class ServerPanel(Panel):
-	bl_label = "Multiplayer Server"
+	bl_label = "Multiplayer"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
 	
