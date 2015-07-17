@@ -44,6 +44,8 @@ import bpy.utils.previews
 
 from . import vr_export
 
+bpy.types.Scene.roomhash = StringProperty(name="", default="")
+
 class ToolPanel(Panel):
 	bl_label = "Firebox"
 	bl_space_type = "VIEW_3D"
@@ -56,8 +58,10 @@ class ToolPanel(Panel):
 		self.layout.operator("export_scene.html")
 
 bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=True)
-bpy.types.Scene.roomhash = StringProperty(name="", default="")
 bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+
+bpy.types.Scene.useipns = BoolProperty(name="IPNS", default=False)
+bpy.types.Scene.useipnsname = StringProperty(name="", default="myroom")
 
 class SettingsPanel(Panel):
 	bl_label = "Settings"
@@ -69,6 +73,9 @@ class SettingsPanel(Panel):
 		self.layout.operator("set_path.janus")
 		self.layout.prop(context.scene, "usegateway")
 		self.layout.prop(context.scene, "usefullscreen")
+		self.layout.prop(context.scene, "useipns")
+		if context.scene.useipns:
+			self.layout.prop(context.scene, "useipnsname")
 
 
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]

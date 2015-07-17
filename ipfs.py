@@ -90,4 +90,4 @@ def load(path):
         
     return d
   
-start()
+#start()
