@@ -6,10 +6,10 @@ from .html import Tag
 from . import ipfs
 
 def f2s(f):
-	return "{0:.4f}".format(f).replace("-0","0")
+	return "{0:.6f}".format(f).replace("-0","0")
 
 def v2s(v):
-	return " ".join("{0:.4f}".format(c).replace("-0","0") for c in v)
+	return " ".join("{0:.6f}".format(c).replace("-0","0") for c in v)
 	
 def p2s(v):
 	v = [v[0],v[2],-v[1]]
