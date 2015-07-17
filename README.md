@@ -1,10 +1,10 @@
-#Fire, a JanusVR Exporter
+#Fire, a JanusVR Exporter & IPFS Publisher
 ### by void
 
 ##Description
 
 Fire is a blender addon that exports the current scene to the JanusVR FireBoxHTML-format.
-It generates the XML description of the room automatically and provides instant publication over the IPFS network (no server needed!).
+It generates the XML description of the room automatically, exports the objects and provides instant publication over the IPFS network (no server needed!).
 
 ##Requirements
 
@@ -28,17 +28,50 @@ This addon was tested under Ubuntu/Linux. Your feedback is welcome!
 1. Create your scene
 2. Click on Start JanusVR
 
-##Settings
+##Configuration
+
+###Firebox
+
+*Start JanusVR* All-in-one button
+
+*Hash* The address of the room is displayed here
+
+*Export FireBox* Only exports the objects and generates the room
+
+###Settings
+
+*Export path* The place where the rooms are exported to
+
+*Janus VR path* The path to the JanusVR application
 
 *IPFS Gateway* Use the IPFS HTTP Gateway (http://gateway.ipfs.io/)
+
 *JanusVR Window Mode* Starts JanusVR in window mode
+
+###Room
+
 *Room* Sets the room model (see the [FireBox docs](http://www.dgp.toronto.edu/~mccrae/projects/firebox/notes.html) for further details.
-*Room visible* If checked, makes the room visible
+
+*Visible* If checked, makes the room visible
+
+*Color* Sets the rooms color
+
+*Gravity* Sets the rooms gravity
+
+*Walk Speed* Sets the players walk speed
+
+*Run Speed* Sets the players run speed
+
+###Multiplayer Server
+
+*Server* URL to the server
+
+*Port* Port of the server
 
 ##FAQ
 
 ###The objects are loading slowly
 Consider running IPFS locally.
 
-###The objects are not rotated correctly
+###The objects are rotated incorrectly
 CTRL+A -> Apply Rotation
