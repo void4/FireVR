@@ -1,5 +1,5 @@
-#Fire, a JanusVR Exporter & IPFS Publisher
-### by void
+#Fire: JanusVR Exporter & IPFS Publisher
+#### by void
 
 ##Description
 
@@ -32,41 +32,41 @@ This addon was tested under Ubuntu/Linux. Your feedback is welcome!
 
 ###Firebox
 
-*Start JanusVR* All-in-one button
+**Start JanusVR** All-in-one button
 
-*Hash* The address of the room is displayed here
+**Hash** The address of the room is displayed here
 
-*Export FireBox* Only exports the objects and generates the room
+**Export FireBox** Only exports the objects and generates the room
 
 ###Settings
 
-*Export path* The place where the rooms are exported to
+**Export path** The place where the rooms are exported to
 
-*Janus VR path* The path to the JanusVR application
+**Janus VR path** The path to the JanusVR application
 
-*IPFS Gateway* Use the IPFS HTTP Gateway (http://gateway.ipfs.io/)
+**IPFS Gateway** Use the IPFS HTTP Gateway (http://gateway.ipfs.io/)
 
-*JanusVR Window Mode* Starts JanusVR in window mode
+**JanusVR Window Mode** Starts JanusVR in window mode
 
 ###Room
 
-*Room* Sets the room model (see the [FireBox docs](http://www.dgp.toronto.edu/~mccrae/projects/firebox/notes.html) for further details.
+**Room** Sets the room model (see the [FireBox docs](http://www.dgp.toronto.edu/~mccrae/projects/firebox/notes.html) for further details.
 
-*Visible* If checked, makes the room visible
+**Visible** If checked, makes the room visible
 
-*Color* Sets the rooms color
+**Color** Sets the rooms color
 
-*Gravity* Sets the rooms gravity
+**Gravity** Sets the rooms gravity
 
-*Walk Speed* Sets the players walk speed
+**Walk Speed** Sets the players walk speed
 
-*Run Speed* Sets the players run speed
+**Run Speed** Sets the players run speed
 
 ###Multiplayer Server
 
-*Server* URL to the server
+**Server** URL to the server
 
-*Port* Port of the server
+**Port** Port of the server
 
 ##FAQ
 
