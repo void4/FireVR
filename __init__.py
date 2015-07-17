@@ -84,7 +84,7 @@ bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=room
 bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
 bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 
-bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=9.8, min=-100, max=100)
+bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
 bpy.types.Scene.useroomwalkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
 bpy.types.Scene.useroomrunspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
