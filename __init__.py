@@ -30,7 +30,8 @@ from bpy.props import (
 	BoolProperty,
 	EnumProperty,
 	FloatProperty,
-	FloatVectorProperty
+	FloatVectorProperty,
+	IntProperty
 	)
 
 from bpy_extras.io_utils import (
@@ -54,6 +55,10 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
+bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=True)
+bpy.types.Scene.roomhash = StringProperty(name="", default="")
+bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+
 class SettingsPanel(Panel):
 	bl_label = "Settings"
 	bl_space_type = "VIEW_3D"
@@ -65,6 +70,16 @@ class SettingsPanel(Panel):
 		self.layout.prop(context.scene, "usegateway")
 		self.layout.prop(context.scene, "usefullscreen")
 
+
+rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
+roomlist = tuple(tuple([room, room, room]) for room in rooms)
+bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
+bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
+bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+
+bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=9.8, min=-100, max=100)
+bpy.types.Scene.useroomwalkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
+bpy.types.Scene.useroomrunspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
 class RoomPanel(Panel):
 	bl_label = "Room"
@@ -82,19 +97,17 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "useroomwalkspeed")
 		self.layout.prop(context.scene, "useroomrunspeed")
 
-bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+bpy.types.Scene.useserver = StringProperty(name="", default="babylon.vrsites.com")
+bpy.types.Scene.useserverport = IntProperty(name="Port", default=5566, min=0, max=2**16-1)
 
-bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=True)
-bpy.types.Scene.roomhash = StringProperty(name="", default="")
-
-rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
-roomlist = tuple(tuple([room, room, room]) for room in rooms)
-bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
-bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
-bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
-bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=9.8, min=-100, max=100)
-bpy.types.Scene.useroomwalkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
-bpy.types.Scene.useroomrunspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
+class ServerPanel(Panel):
+	bl_label = "Multiplayer Server"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	
+	def draw(self, context):
+		self.layout.prop(context.scene, "useserver")
+		self.layout.prop(context.scene, "useserverport")
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__

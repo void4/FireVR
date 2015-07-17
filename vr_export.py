@@ -46,6 +46,8 @@ def write_html(scene, filepath, path_mode):
 		("use_local_asset",scene.useroom),
 		("visible",str(scene.useroomvisible).lower()),
 		("col",v2s(scene.useroomcolor)),
+		("server",scene.useserver),
+		("port",scene.useserverport),
 		]
 		
 	room = Tag("Room", attr)
