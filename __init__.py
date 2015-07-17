@@ -105,7 +105,7 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "useroomrunspeed")
 
 bpy.types.Scene.useserver = StringProperty(name="", default="babylon.vrsites.com")
-bpy.types.Scene.useserverport = IntProperty(name="Port", default=5566, min=0, max=2**16-1)
+bpy.types.Scene.useserverport = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
 class ServerPanel(Panel):
 	bl_label = "Multiplayer Server"
