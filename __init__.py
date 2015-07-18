@@ -125,8 +125,9 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "janus_room")
 		
 		if context.scene.janus_room!="None":
-			self.layout.prop(context.scene, "janus_room_color")
 			self.layout.prop(context.scene, "janus_room_visible")
+			if context.scene.janus_room_visible:
+				self.layout.prop(context.scene, "janus_room_color")
 			
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
