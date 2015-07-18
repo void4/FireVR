@@ -109,8 +109,8 @@ class ObjectPanel(Panel):
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
 bpy.types.Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
-bpy.types.Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
 bpy.types.Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+bpy.types.Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
 
 bpy.types.Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
 bpy.types.Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
@@ -125,8 +125,8 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "janus_room")
 		
 		if context.scene.janus_room!="None":
-			self.layout.prop(context.scene, "janus_room_visible")
 			self.layout.prop(context.scene, "janus_room_color")
+			self.layout.prop(context.scene, "janus_room_visible")
 			
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")

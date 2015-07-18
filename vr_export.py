@@ -76,11 +76,11 @@ def write_html(scene, filepath, path_mode):
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", o.janus_object_locked), ("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
+			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", str(o.janus_object_locked).lower()), ("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
 			o.location = loc
 		elif o.type=="FONT":
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
-				room(Tag("Link", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name)]))
+				room(Tag("Link", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name), ("col", v2s(o.color[:3]))]))
 			else:
 				text = Tag("Text", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("title",o.name)])
 				text.sub.append(o.data.body)
