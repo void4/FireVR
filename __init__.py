@@ -22,7 +22,8 @@ import subprocess
 from bpy.types import (
 	Operator,
 	Panel,
-	AddonPreferences
+	AddonPreferences,
+	RenderEngine
 	)
 
 from bpy.props import (
@@ -58,24 +59,35 @@ class ToolPanel(Panel):
 		self.layout.operator("export_scene.html")
 
 bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=False)
-bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
-
 bpy.types.Scene.useipns = BoolProperty(name="IPNS", default=False)
 bpy.types.Scene.useipnsname = StringProperty(name="", default="myroom")
 
-class SettingsPanel(Panel):
-	bl_label = "Settings"
+class ExportSettingsPanel(Panel):
+	bl_label = "Export Settings"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
 		self.layout.operator("export_path.html")
-		self.layout.operator("set_path.janus")
 		self.layout.prop(context.scene, "usegateway")
-		self.layout.prop(context.scene, "usefullscreen")
 		self.layout.prop(context.scene, "useipns")
 		if context.scene.useipns:
 			self.layout.prop(context.scene, "useipnsname")
+
+bpy.types.Scene.userendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
+bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+bpy.types.Scene.useupdaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
+
+class RunSettingsPanel(Panel):
+	bl_label = "Run Settings"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+	
+	def draw(self, context):
+		self.layout.operator("set_path.janus")
+		self.layout.prop(context.scene, "userendermode")
+		self.layout.prop(context.scene, "useupdaterate")
+		self.layout.prop(context.scene, "usefullscreen")
 
 bpy.types.Scene.useobjectexport = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 
@@ -250,9 +262,12 @@ class VRJanus(Operator):
 		if not context.scene.usefullscreen:
 			args.append("-window")
 			
+		args += ["render", context.scene.userendermode]
+		args += ["rate", str(context.scene.useupdaterate)]
+			
 		januspath = hasv(context, "januspath")
 		if januspath:
-			subprocess.Popen([januspath, gateway]+args, close_fds=True)
+			subprocess.Popen([januspath]+args+[gateway], close_fds=True)
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}

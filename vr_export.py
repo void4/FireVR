@@ -71,7 +71,7 @@ def write_html(scene, filepath, path_mode):
 				if scene.useobjectexport==".obj":
 					bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
 				else:
-					bpy.ops.wm.collada_export(filepath=epath, selected=True, )
+					bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
 				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.useobjectexport), ("mtl",o.data.name+".mtl")])
 				exportedmeshes.append(o.data.name)
 				assets(ob)
