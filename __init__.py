@@ -58,9 +58,9 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
-bpy.types.Scene.usegateway = BoolProperty(name="IPFS Gateway", default=False)
-bpy.types.Scene.useipns = BoolProperty(name="IPNS", default=False)
-bpy.types.Scene.useipnsname = StringProperty(name="", default="myroom")
+bpy.types.Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
+bpy.types.Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
+bpy.types.Scene.janus_ipnsname = StringProperty(name="", default="myroom")
 
 class ExportSettingsPanel(Panel):
 	bl_label = "Export Settings"
@@ -69,14 +69,14 @@ class ExportSettingsPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.operator("export_path.html")
-		self.layout.prop(context.scene, "usegateway")
-		self.layout.prop(context.scene, "useipns")
-		if context.scene.useipns:
-			self.layout.prop(context.scene, "useipnsname")
+		self.layout.prop(context.scene, "janus_gateway")
+		self.layout.prop(context.scene, "janus_ipns")
+		if context.scene.janus_ipns:
+			self.layout.prop(context.scene, "janus_ipnsname")
 
-bpy.types.Scene.userendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
-bpy.types.Scene.usefullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
-bpy.types.Scene.useupdaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
+bpy.types.Scene.janus_rendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
+bpy.types.Scene.janus_fullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+bpy.types.Scene.janus_updaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
 
 class RunSettingsPanel(Panel):
 	bl_label = "Run Settings"
@@ -85,11 +85,14 @@ class RunSettingsPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.operator("set_path.janus")
-		self.layout.prop(context.scene, "userendermode")
-		self.layout.prop(context.scene, "useupdaterate")
-		self.layout.prop(context.scene, "usefullscreen")
+		self.layout.prop(context.scene, "janus_rendermode")
+		self.layout.prop(context.scene, "janus_updaterate")
+		self.layout.prop(context.scene, "janus_fullscreen")
 
-bpy.types.Scene.useobjectexport = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
+bpy.types.Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
+
+bpy.types.Object.janus_object_collision = BoolProperty(name="Collision", default=True)
+bpy.types.Object.janus_object_locked = BoolProperty(name="Locked", default=True)
 
 class ObjectPanel(Panel):
 	bl_label = "Objects"
@@ -97,17 +100,21 @@ class ObjectPanel(Panel):
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "useobjectexport")
+		self.layout.prop(context.scene, "janus_object_export")
+		
+		if context.object.type == "MESH":
+			self.layout.prop(context.object, "janus_object_collision")
+			self.layout.prop(context.object, "janus_object_locked")
 		
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
-bpy.types.Scene.useroom = EnumProperty(name="", default="room_plane", items=roomlist)
-bpy.types.Scene.useroomvisible = BoolProperty(name="Visible", default=True)
-bpy.types.Scene.useroomcolor = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+bpy.types.Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
+bpy.types.Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
+bpy.types.Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 
-bpy.types.Scene.useroomgravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
-bpy.types.Scene.useroomwalkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
-bpy.types.Scene.useroomrunspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
+bpy.types.Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
+bpy.types.Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
+bpy.types.Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
 class RoomPanel(Panel):
 	bl_label = "Room"
@@ -115,18 +122,18 @@ class RoomPanel(Panel):
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "useroom")
+		self.layout.prop(context.scene, "janus_room")
 		
-		if context.scene.useroom!="None":
-			self.layout.prop(context.scene, "useroomvisible")
-			self.layout.prop(context.scene, "useroomcolor")
+		if context.scene.janus_room!="None":
+			self.layout.prop(context.scene, "janus_room_visible")
+			self.layout.prop(context.scene, "janus_room_color")
 			
-		self.layout.prop(context.scene, "useroomgravity")
-		self.layout.prop(context.scene, "useroomwalkspeed")
-		self.layout.prop(context.scene, "useroomrunspeed")
+		self.layout.prop(context.scene, "janus_room_gravity")
+		self.layout.prop(context.scene, "janus_room_walkspeed")
+		self.layout.prop(context.scene, "janus_room_runspeed")
 
-bpy.types.Scene.useserver = StringProperty(name="", default="babylon.vrsites.com")
-bpy.types.Scene.useserverport = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
+bpy.types.Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
+bpy.types.Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
 class ServerPanel(Panel):
 	bl_label = "Multiplayer"
@@ -134,8 +141,8 @@ class ServerPanel(Panel):
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "useserver")
-		self.layout.prop(context.scene, "useserverport")
+		self.layout.prop(context.scene, "janus_server")
+		self.layout.prop(context.scene, "janus_server_port")
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
@@ -226,7 +233,7 @@ class VRExport(Operator):
 		return {"FINISHED"}
 
 def getURL(context, hashes):
-	if context.scene.usegateway:
+	if context.scene.janus_gateway:
 		return "http://gateway.ipfs.io/ipfs/"+hashes[-1]+"/index.html"
 	else:
 		return "localhost:8080/ipfs/"+hashes[-1]+"/index.html"
@@ -259,11 +266,11 @@ class VRJanus(Operator):
 		self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
 		
 		args = []
-		if not context.scene.usefullscreen:
+		if not context.scene.janus_fullscreen:
 			args.append("-window")
 			
-		args += ["render", context.scene.userendermode]
-		args += ["rate", str(context.scene.useupdaterate)]
+		args += ["render", context.scene.janus_rendermode]
+		args += ["rate", str(context.scene.janus_updaterate)]
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
