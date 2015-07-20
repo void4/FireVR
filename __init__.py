@@ -118,6 +118,11 @@ bpy.types.Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8,
 bpy.types.Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
 bpy.types.Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
+bpy.types.Scene.janus_room_teleport = FloatVectorProperty(name="", default=(5.0,100.0), size=2, min=0.0, max=10000.0)
+
+bpy.types.Scene.janus_room_defaultsounds = BoolProperty(name="Default Sounds", default=True)
+bpy.types.Scene.janus_room_cursorvisible = BoolProperty(name="Show cursor", default=True)
+
 bpy.types.Scene.janus_room_fog = BoolProperty(name="Fog", default=False)
 bpy.types.Scene.janus_room_fog_mode = EnumProperty(name="", default="exp", items=tuple(tuple([e,e,e]) for e in ["exp", "exp2", "linear"]))
 bpy.types.Scene.janus_room_fog_density = FloatProperty(name="Density", default=1.0, min=0.0, max=1000.0)
@@ -141,6 +146,11 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
 		self.layout.prop(context.scene, "janus_room_runspeed")
+		self.layout.label("Teleport Range")
+		self.layout.prop(context.scene, "janus_room_teleport")
+
+		self.layout.prop(context.scene, "janus_room_defaultsounds")
+		self.layout.prop(context.scene, "janus_room_cursorvisible")
 
 		self.layout.prop(context.scene, "janus_room_fog")
 		if context.scene.janus_room_fog:
