@@ -118,6 +118,13 @@ bpy.types.Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8,
 bpy.types.Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
 bpy.types.Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
+bpy.types.Scene.janus_room_fog = BoolProperty(name="Fog", default=False)
+bpy.types.Scene.janus_room_fog_mode = EnumProperty(name="", default="exp", items=tuple(tuple([e,e,e]) for e in ["exp", "exp2", "linear"]))
+bpy.types.Scene.janus_room_fog_density = FloatProperty(name="Density", default=1.0, min=0.0, max=1000.0)
+bpy.types.Scene.janus_room_fog_start = FloatProperty(name="Start", default=0.0, min=0.0, max=1000.0)
+bpy.types.Scene.janus_room_fog_end = FloatProperty(name="End", default=1.0, min=0.0, max=1000.0)
+bpy.types.Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.0,0.0,0.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+
 class RoomPanel(Panel):
 	bl_label = "Room"
 	bl_space_type = "VIEW_3D"
@@ -134,6 +141,16 @@ class RoomPanel(Panel):
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
 		self.layout.prop(context.scene, "janus_room_runspeed")
+
+		self.layout.prop(context.scene, "janus_room_fog")
+		if context.scene.janus_room_fog:
+				self.layout.prop(context.scene, "janus_room_fog_col")
+				self.layout.prop(context.scene, "janus_room_fog_mode")
+				if context.scene.janus_room_fog_mode in ["exp", "exp2"]:
+						self.layout.prop(context.scene, "janus_room_fog_density")
+				elif context.scene.janus_room_fog_mode == "linear":
+						self.layout.prop(context.scene, "janus_room_fog_start")
+						self.layout.prop(context.scene, "janus_room_fog_end")
 
 bpy.types.Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
 bpy.types.Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)

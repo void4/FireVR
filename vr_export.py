@@ -5,6 +5,9 @@ import bpy
 from .html import Tag
 from . import ipfs
 
+def b2s(b):
+	return str(b).lower()
+
 def f2s(f):
 	return "{0:.6f}".format(f).replace("-0","0")
 
@@ -35,21 +38,27 @@ def write_html(scene, filepath, path_mode):
 	assets = Tag("Assets")
 	
 	attr=[
+		("server",scene.janus_server),
+		("port",scene.janus_server_port),
 		("fwd","0 0 1"),
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
 		("run_speed", f2s(scene.janus_room_runspeed)),
+		("fog", b2s(scene.janus_room_fog)),
+		("fog_mode", scene.janus_room_fog_mode),
+		("fog_density", f2s(scene.janus_room_fog_density)),
+		("fog_start", f2s(scene.janus_room_fog_start)),
+		("fog_end", f2s(scene.janus_room_fog_end)),
+		("fog_col", v2s(scene.janus_room_fog_col)),
 		]
-	
+
 	if scene.janus_room!="None":
 		attr += [
 		("use_local_asset",scene.janus_room),
-		("visible",str(scene.janus_room_visible).lower()),
+		("visible",b2s(scene.janus_room_visible)),
 		("col",v2s(scene.janus_room_color)),
-		("server",scene.janus_server),
-		("port",scene.janus_server_port),
 		]
-		
+
 	room = Tag("Room", attr)
 	
 	useractive = scene.objects.active
@@ -76,7 +85,7 @@ def write_html(scene, filepath, path_mode):
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", str(o.janus_object_locked).lower()), ("lighting", str(o.janus_object_lighting).lower()),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
+			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
 			o.location = loc
 		elif o.type=="FONT":
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
