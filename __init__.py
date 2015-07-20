@@ -93,6 +93,7 @@ bpy.types.Scene.janus_object_export = EnumProperty(name="", default=".obj", item
 
 bpy.types.Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 bpy.types.Object.janus_object_locked = BoolProperty(name="Locked", default=True)
+bpy.types.Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
 
 class ObjectPanel(Panel):
 	bl_label = "Objects"
@@ -105,6 +106,7 @@ class ObjectPanel(Panel):
 		if context.object.type == "MESH":
 			self.layout.prop(context.object, "janus_object_collision")
 			self.layout.prop(context.object, "janus_object_locked")
+			self.layout.prop(context.object, "janus_object_lighting")
 		
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
