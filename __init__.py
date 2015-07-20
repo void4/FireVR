@@ -23,7 +23,9 @@ from bpy.types import (
 	Operator,
 	Panel,
 	AddonPreferences,
-	RenderEngine
+	RenderEngine,
+	Scene,
+	Object
 	)
 
 from bpy.props import (
@@ -32,7 +34,8 @@ from bpy.props import (
 	EnumProperty,
 	FloatProperty,
 	FloatVectorProperty,
-	IntProperty
+	IntProperty,
+	IntVectorProperty
 	)
 
 from bpy_extras.io_utils import (
@@ -45,7 +48,7 @@ import bpy.utils.previews
 
 from . import vr_export
 
-bpy.types.Scene.roomhash = StringProperty(name="", default="")
+Scene.roomhash = StringProperty(name="", default="")
 
 class ToolPanel(Panel):
 	bl_label = "Firebox"
@@ -58,9 +61,9 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
-bpy.types.Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
-bpy.types.Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
-bpy.types.Scene.janus_ipnsname = StringProperty(name="", default="myroom")
+Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
+Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
+Scene.janus_ipnsname = StringProperty(name="", default="myroom")
 
 class ExportSettingsPanel(Panel):
 	bl_label = "Export Settings"
@@ -74,9 +77,9 @@ class ExportSettingsPanel(Panel):
 		if context.scene.janus_ipns:
 			self.layout.prop(context.scene, "janus_ipnsname")
 
-bpy.types.Scene.janus_rendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
-bpy.types.Scene.janus_fullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
-bpy.types.Scene.janus_updaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
+Scene.janus_rendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
+Scene.janus_fullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+Scene.janus_updaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
 
 class RunSettingsPanel(Panel):
 	bl_label = "Run Settings"
@@ -89,11 +92,15 @@ class RunSettingsPanel(Panel):
 		self.layout.prop(context.scene, "janus_updaterate")
 		self.layout.prop(context.scene, "janus_fullscreen")
 
-bpy.types.Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
+Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 
-bpy.types.Object.janus_object_collision = BoolProperty(name="Collision", default=True)
-bpy.types.Object.janus_object_locked = BoolProperty(name="Locked", default=True)
-bpy.types.Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
+Object.janus_object_collision = BoolProperty(name="Collision", default=True)
+Object.janus_object_locked = BoolProperty(name="Locked", default=True)
+Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
+
+Object.janus_object_websurface = BoolProperty(name="Websurface", default=False)
+Object.janus_object_websurface_url = StringProperty(name="URL", default="")
+Object.janus_object_websurface_size = IntVectorProperty(name="", size=2, default=(1920, 1080), min=1, max=10000)
 
 class ObjectPanel(Panel):
 	bl_label = "Objects"
@@ -107,28 +114,34 @@ class ObjectPanel(Panel):
 			self.layout.prop(context.object, "janus_object_collision")
 			self.layout.prop(context.object, "janus_object_locked")
 			self.layout.prop(context.object, "janus_object_lighting")
+
+			self.layout.prop(context.object, "janus_object_websurface")
+			if context.object.janus_object_websurface:
+				self.layout.prop(context.object, "janus_object_websurface_url")
+				self.layout.label("Width & Height")
+				self.layout.prop(context.object, "janus_object_websurface_size")
 		
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
-bpy.types.Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
-bpy.types.Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
-bpy.types.Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
+Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
+Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
 
-bpy.types.Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
-bpy.types.Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
-bpy.types.Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
+Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
+Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
+Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
 
-bpy.types.Scene.janus_room_teleport = FloatVectorProperty(name="", default=(5.0,100.0), size=2, min=0.0, max=10000.0)
+Scene.janus_room_teleport = FloatVectorProperty(name="", default=(5.0,100.0), size=2, min=0.0, max=10000.0)
 
-bpy.types.Scene.janus_room_defaultsounds = BoolProperty(name="Default Sounds", default=True)
-bpy.types.Scene.janus_room_cursorvisible = BoolProperty(name="Show cursor", default=True)
+Scene.janus_room_defaultsounds = BoolProperty(name="Default Sounds", default=True)
+Scene.janus_room_cursorvisible = BoolProperty(name="Show cursor", default=True)
 
-bpy.types.Scene.janus_room_fog = BoolProperty(name="Fog", default=False)
-bpy.types.Scene.janus_room_fog_mode = EnumProperty(name="", default="exp", items=tuple(tuple([e,e,e]) for e in ["exp", "exp2", "linear"]))
-bpy.types.Scene.janus_room_fog_density = FloatProperty(name="Density", default=1.0, min=0.0, max=1000.0)
-bpy.types.Scene.janus_room_fog_start = FloatProperty(name="Start", default=0.0, min=0.0, max=1000.0)
-bpy.types.Scene.janus_room_fog_end = FloatProperty(name="End", default=1.0, min=0.0, max=1000.0)
-bpy.types.Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.0,0.0,0.0), subtype="COLOR", size=3, min=0.0, max=1.0)
+Scene.janus_room_fog = BoolProperty(name="Fog", default=False)
+Scene.janus_room_fog_mode = EnumProperty(name="", default="exp", items=tuple(tuple([e,e,e]) for e in ["exp", "exp2", "linear"]))
+Scene.janus_room_fog_density = FloatProperty(name="Density", default=1.0, min=0.0, max=1000.0)
+Scene.janus_room_fog_start = FloatProperty(name="Start", default=0.0, min=0.0, max=1000.0)
+Scene.janus_room_fog_end = FloatProperty(name="End", default=1.0, min=0.0, max=1000.0)
+Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.0,0.0,0.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 
 class RoomPanel(Panel):
 	bl_label = "Room"
@@ -162,8 +175,8 @@ class RoomPanel(Panel):
 						self.layout.prop(context.scene, "janus_room_fog_start")
 						self.layout.prop(context.scene, "janus_room_fog_end")
 
-bpy.types.Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
-bpy.types.Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
+Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
+Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
 class ServerPanel(Panel):
 	bl_label = "Multiplayer"

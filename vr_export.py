@@ -87,6 +87,7 @@ def write_html(scene, filepath, path_mode):
 	useractive = scene.objects.active
 	
 	exportedmeshes = []
+	exportedsurfaces = []
 	
 	for o in bpy.data.objects:
 		if o.type=="MESH":
@@ -107,13 +108,24 @@ def write_html(scene, filepath, path_mode):
 				else:
 					with redirect_stdout(stdout):
 						bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
+						# TODO differentiate between per-object and per-mesh properties
 				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
+			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
+			
+			if o.janus_object_websurface and o.janus_object_websurface_url:
+					if not o.janus_object_websurface_url in exportedsurfaces:
+							assets(Tag("AssetWebSurface", attr=[("id", o.janus_object_websurface_url), ("src", o.janus_object_websurface_url), ("width", o.janus_object_websurface_size[0]), ("height", o.janus_object_websurface_size[1])]))
+							exportedsurfaces.append(o.janus_object_websurface_url)
+					attr += [("websurface_id", o.janus_object_websurface_url)]
+			
+			room(Tag("Object", single=False, attr=attr))
 			o.location = loc
+		
 		elif o.type=="FONT":
+		
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
 				room(Tag("Link", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name), ("col", v2s(o.color[:3]))]))
 			else:
