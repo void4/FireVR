@@ -56,7 +56,7 @@ class Tag:
 			
 		
 	def __call__(self, tag):
-		print("Adding %s to %s" % (tag.tag, self.tag))
+		#print("Adding %s to %s" % (tag.tag, self.tag))
 		self.sub.append(tag)
 		
 	def __repr__(self):

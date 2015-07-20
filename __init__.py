@@ -304,7 +304,7 @@ class VRJanus(Operator):
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
-			subprocess.Popen([januspath]+args+[gateway], close_fds=True)
+			subprocess.Popen([januspath]+args+[gateway], close_fds=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}

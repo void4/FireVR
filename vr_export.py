@@ -1,25 +1,38 @@
 import os
+import io
+from contextlib import redirect_stdout
 
 import bpy
+from mathutils import Vector
 
 from .html import Tag
 from . import ipfs
 
+# boolean to string
 def b2s(b):
 	return str(b).lower()
 
+# float to string
 def f2s(f):
-	return "{0:.6f}".format(f).replace("-0","0")
+	return "{0:.6f}".format(f)
 
+# vector to string
 def v2s(v):
-	return " ".join("{0:.6f}".format(c).replace("-0","0") for c in v)
+	return " ".join("{0:.6f}".format(c) for c in v)
 	
+# position to string
 def p2s(v):
 	v = [v[0],v[2],-v[1]]
 	return v2s(v)
 
+# rotation to string
+def r2s(m):
+	return v2s(list(m*Vector([-1,0,0,0]))[:3])
+
 def write_html(scene, filepath, path_mode):
 
+	stdout = io.StringIO()
+	
 	world = scene.world
 
 	doc = Tag("!DOCTYPE html", single=True)
@@ -55,6 +68,12 @@ def write_html(scene, filepath, path_mode):
 		("fog_end", f2s(scene.janus_room_fog_end)),
 		("fog_col", v2s(scene.janus_room_fog_col)),
 		]
+	
+	if scene.camera:
+		attr += [
+		("pos", p2s(scene.camera.location)),
+		("fwd", r2s(scene.camera.matrix_local)),
+		]
 
 	if scene.janus_room!="None":
 		attr += [
@@ -73,7 +92,8 @@ def write_html(scene, filepath, path_mode):
 		if o.type=="MESH":
 			scene.objects.active = o
 			try:
-				bpy.ops.object.transform_apply(rotation=True)
+				with redirect_stdout(stdout):
+					bpy.ops.object.transform_apply(rotation=True)
 			except:
 				pass
 			loc = o.location.copy()
@@ -82,9 +102,11 @@ def write_html(scene, filepath, path_mode):
 			if not o.data.name in exportedmeshes:
 				epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
 				if scene.janus_object_export==".obj":
-					bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=False, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
+					with redirect_stdout(stdout):
+						bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=False, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
 				else:
-					bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
+					with redirect_stdout(stdout):
+						bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
 				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
 				exportedmeshes.append(o.data.name)
 				assets(ob)
