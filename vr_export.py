@@ -69,14 +69,14 @@ def write_html(scene, filepath, path_mode):
 			if not o.data.name in exportedmeshes:
 				epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
 				if scene.janus_object_export==".obj":
-					bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_triangles=True, check_existing=False, use_normals=True)
+					bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=False, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
 				else:
 					bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
 				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", str(o.janus_object_locked).lower()), ("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
+			room(Tag("Object", single=False, attr=[("id", o.data.name), ("locked", str(o.janus_object_locked).lower()), ("lighting", str(o.janus_object_lighting).lower()),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]))
 			o.location = loc
 		elif o.type=="FONT":
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
