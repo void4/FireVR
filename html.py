@@ -58,6 +58,9 @@ class Tag:
 	def __call__(self, tag):
 		#print("Adding %s to %s" % (tag.tag, self.tag))
 		self.sub.append(tag)
+
+	def __contains__(self, tag):
+		return tag in self.sub
 		
 	def __repr__(self):
 		s = StringIO()

@@ -1,5 +1,6 @@
 import os
 import io
+import shutil
 from contextlib import redirect_stdout
 
 import bpy
@@ -153,6 +154,17 @@ def write_html(scene, filepath, path_mode):
 				text = Tag("Text", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("title",o.name)])
 				text.sub.append(o.data.body)
 				room(text)
+
+		elif o.type=="SPEAKER":
+
+			if o.janus_object_sound:
+				name = os.path.basename(o.janus_object_sound)
+				assetsound = Tag("AssetSound", attr=[("id", name), ("src",name)])
+				if not assetsound in assets:
+					assets(assetsound)
+					shutil.copyfile(src=o.janus_object_sound, dst=os.path.join(filepath, name))
+				sound = Tag("Sound", attr=[("id", name), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
+				room(sound)
 				
 	scene.objects.active = useractive
 	

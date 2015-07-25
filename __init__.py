@@ -113,15 +113,21 @@ Object.janus_object_websurface_url = StringProperty(name="URL", default="")
 Object.janus_object_websurface_size = IntVectorProperty(name="", size=2, default=(1920, 1080), min=1, max=10000)
 Object.janus_object_cullface = EnumProperty(name="", default="back", items=tuple(tuple([e,e,e]) for e in ["back", "front", "none"]))
 
+Object.janus_object_sound = StringProperty(name="Sound", subtype="FILE_PATH", default="")
+Object.janus_object_sound_xy1 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
+Object.janus_object_sound_xy2 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
+Object.janus_object_sound_loop = BoolProperty(name="Loop", default=False)
+Object.janus_object_sound_once = BoolProperty(name="Play once", default=False)
+
 class ObjectPanel(Panel):
 	bl_label = "Objects"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "janus_object_export")
 		
 		if context.object.type == "MESH":
+			self.layout.prop(context.scene, "janus_object_export")
 			self.layout.prop(context.object, "janus_object_collision")
 			self.layout.prop(context.object, "janus_object_locked")
 			self.layout.prop(context.object, "janus_object_lighting")
@@ -138,6 +144,16 @@ class ObjectPanel(Panel):
 
 			self.layout.label("Cull Face")
 			self.layout.prop(context.object, "janus_object_cullface")
+
+		elif context.object.type=="SPEAKER":
+			self.layout.prop(context.object, "janus_object_sound")
+			self.layout.label("XY1")
+			self.layout.prop(context.object, "janus_object_sound_xy1")
+			self.layout.label("XY2")
+			self.layout.prop(context.object, "janus_object_sound_xy2")
+
+			self.layout.prop(context.object, "janus_object_sound_loop")
+			self.layout.prop(context.object, "janus_object_sound_once")
 		
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
@@ -212,6 +228,16 @@ class ServerPanel(Panel):
 	def draw(self, context):
 		self.layout.prop(context.scene, "janus_server")
 		self.layout.prop(context.scene, "janus_server_port")
+
+
+Scene.janus_debug = BoolProperty(name="JanusVR", default=False)
+class DebugPanel(Panel):
+	bl_label = "Debug"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+
+	def draw(self, context):
+		self.layout.prop(context.scene, "janus_debug")
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
@@ -343,7 +369,10 @@ class VRJanus(Operator):
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
-			subprocess.Popen([januspath]+args+[gateway], close_fds=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			params = {}
+			if not context.scene.janus_debug:
+				params = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+			subprocess.Popen([januspath]+args+[gateway], close_fds=True, **params)
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}
