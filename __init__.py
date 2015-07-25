@@ -79,6 +79,7 @@ class ExportSettingsPanel(Panel):
 
 Scene.janus_rendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
 Scene.janus_fullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
+Scene.janus_size = IntVectorProperty(name="", size=2, default=(640, 480), min=1, max=10000)
 Scene.janus_updaterate = IntProperty(name="Rate", default=100, min=1, max=5000)
 
 class RunSettingsPanel(Panel):
@@ -91,6 +92,9 @@ class RunSettingsPanel(Panel):
 		self.layout.prop(context.scene, "janus_rendermode")
 		self.layout.prop(context.scene, "janus_updaterate")
 		self.layout.prop(context.scene, "janus_fullscreen")
+		if not context.scene.janus_fullscreen:
+			self.layout.label("Window size")
+			self.layout.prop(context.scene, "janus_size")
 
 Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 
@@ -311,6 +315,10 @@ class VRJanus(Operator):
 		args = []
 		if not context.scene.janus_fullscreen:
 			args.append("-window")
+			args.append("-width")
+			args.append(str(context.scene.janus_size[0]))
+			args.append("-height")
+			args.append(str(context.scene.janus_size[1]))
 			
 		args += ["render", context.scene.janus_rendermode]
 		args += ["rate", str(context.scene.janus_updaterate)]
