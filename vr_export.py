@@ -57,6 +57,9 @@ def write_html(scene, filepath, path_mode):
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
 		("run_speed", f2s(scene.janus_room_runspeed)),
+		("jump_velocity", f2s(scene.janus_room_jump)),
+		("near_dist", f2s(scene.janus_room_clipplane[0])),
+		("far_dist", f2s(scene.janus_room_clipplane[1])),
 		("teleport_min_dist", f2s(scene.janus_room_teleport[0])),
 		("teleport_max_dist", f2s(scene.janus_room_teleport[1])),
 		("default_sounds", b2s(scene.janus_room_defaultsounds)),
@@ -88,15 +91,33 @@ def write_html(scene, filepath, path_mode):
 	
 	exportedmeshes = []
 	exportedsurfaces = []
+
+	if  scene.janus_unpack:
+		bpy.ops.file.unpack_all(method='USE_LOCAL')
+		bpy.ops.file.make_paths_absolute()
 	
 	for o in bpy.data.objects:
 		if o.type=="MESH":
 			scene.objects.active = o
-			try:
-				with redirect_stdout(stdout):
-					bpy.ops.object.transform_apply(rotation=True)
-			except:
-				pass
+
+			if scene.janus_apply_rot:
+				try:
+					with redirect_stdout(stdout):
+						bpy.ops.object.transform_apply(rotation=True)
+				except:
+					pass
+			if scene.janus_apply_scale:
+				try:
+					with redirect_stdout(stdout):
+						bpy.ops.object.transform_apply(scale=True)
+				except:
+					pass
+			if scene.janus_apply_pos:
+				try:
+					with redirect_stdout(stdout):
+						bpy.ops.object.transform_apply(position=True)
+				except:
+					pass
 			loc = o.location.copy()
 			o.location = [0, 0, 0]
 			bpy.ops.object.select_pattern(pattern=o.name, extend=False)
@@ -104,7 +125,7 @@ def write_html(scene, filepath, path_mode):
 				epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
 				if scene.janus_object_export==".obj":
 					with redirect_stdout(stdout):
-						bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=False, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
+						bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
 				else:
 					with redirect_stdout(stdout):
 						bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
@@ -113,7 +134,7 @@ def write_html(scene, filepath, path_mode):
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
+			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
 			
 			if o.janus_object_websurface and o.janus_object_websurface_url:
 					if not o.janus_object_websurface_url in exportedsurfaces:
