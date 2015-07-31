@@ -71,6 +71,7 @@ def write_html(scene, filepath, path_mode):
 		("fog_start", f2s(scene.janus_room_fog_start)),
 		("fog_end", f2s(scene.janus_room_fog_end)),
 		("fog_col", v2s(scene.janus_room_fog_col)),
+		("locked", b2s(scene.janus_room_locked)),
 		]
 	
 	if scene.camera:
