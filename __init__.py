@@ -61,6 +61,7 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
+Scene.janus_ipfs = BoolProperty(name="Use IPFS", default=False)
 Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
 Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
 Scene.janus_ipnsname = StringProperty(name="", default="myroom")
@@ -77,8 +78,10 @@ class ExportSettingsPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.operator("export_path.html")
-		self.layout.prop(context.scene, "janus_gateway")
-		self.layout.prop(context.scene, "janus_ipns")
+		self.layout.prop(context.scene, "janus_ipfs")
+		if context.scene.janus_ipfs:
+			self.layout.prop(context.scene, "janus_gateway")
+			self.layout.prop(context.scene, "janus_ipns")
 		if context.scene.janus_ipns:
 			self.layout.prop(context.scene, "janus_ipnsname")
 		self.layout.prop(context.scene, "janus_apply_rot")
@@ -360,19 +363,20 @@ class VRJanus(Operator):
 			self.report({"ERROR"}, "Did not export scene.")
 			return {"FINISHED"}			
 	
-		ipfs.start()
+		if context.scene.janus_ipfs:
+			ipfs.start()
 		
-		hashes = ipfs.addRecursive(filepath)
+			hashes = ipfs.addRecursive(filepath)
 	
-		if not hashes:
-			self.report({"ERROR"}, "IPFS Error")
-			return {"FINISHED"}
+			if not hashes:
+				self.report({"ERROR"}, "IPFS Error")
+				return {"FINISHED"}
 			
-		gateway = getURL(context, hashes)
+			gateway = getURL(context, hashes)
 		
-		context.scene.roomhash = gateway
+			context.scene.roomhash = gateway
 			
-		self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
+			self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
 		
 		args = []
 		if not context.scene.janus_fullscreen:
@@ -384,13 +388,19 @@ class VRJanus(Operator):
 			
 		args += ["render", context.scene.janus_rendermode]
 		args += ["rate", str(context.scene.janus_updaterate)]
+		
+		if not context.scene.janus_ipfs:
+			filepath += "\index.html"
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
 			params = {}
 			if not context.scene.janus_debug:
 				params = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
-			subprocess.Popen([januspath]+args+[gateway], close_fds=True, **params)
+			if context.scene.janus_ipfs:
+				subprocess.Popen([januspath]+args+[gateway], close_fds=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			else:
+				subprocess.Popen([januspath]+args+[filepath])
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}
