@@ -111,6 +111,7 @@ Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 Object.janus_object_locked = BoolProperty(name="Locked", default=True)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
 Object.janus_object_visible = BoolProperty(name="Visible", default=True)
+Object.janus_object_color_active = BoolProperty(name="Set Color", default=False)
 Object.janus_object_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 Object.janus_object_websurface = BoolProperty(name="Websurface", default=False)
 Object.janus_object_websurface_url = StringProperty(name="URL", default="")
@@ -137,7 +138,9 @@ class ObjectPanel(Panel):
 			self.layout.prop(context.object, "janus_object_lighting")
 			self.layout.prop(context.object, "janus_object_visible")
 			if context.object.janus_object_visible:
-				self.layout.prop(context.object, "janus_object_color")
+				self.layout.prop(context.object, "janus_object_color_active")
+				if context.object.janus_object_color_active:
+					self.layout.prop(context.object, "janus_object_color")
 
 			self.layout.prop(context.object, "janus_object_websurface")
 			if context.object.janus_object_websurface:
