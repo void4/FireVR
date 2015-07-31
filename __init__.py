@@ -61,6 +61,7 @@ class ToolPanel(Panel):
 			self.layout.prop(context.scene, "roomhash")
 		self.layout.operator("export_scene.html")
 
+Scene.janus_ipfs = BoolProperty(name="Use IPFS", default=False)
 Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
 Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
 Scene.janus_ipnsname = StringProperty(name="", default="myroom")
@@ -77,8 +78,10 @@ class ExportSettingsPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.operator("export_path.html")
-		self.layout.prop(context.scene, "janus_gateway")
-		self.layout.prop(context.scene, "janus_ipns")
+		self.layout.prop(context.scene, "janus_ipfs")
+		if context.scene.janus_ipfs:
+			self.layout.prop(context.scene, "janus_gateway")
+			self.layout.prop(context.scene, "janus_ipns")
 		if context.scene.janus_ipns:
 			self.layout.prop(context.scene, "janus_ipnsname")
 		self.layout.prop(context.scene, "janus_apply_rot")
@@ -111,6 +114,7 @@ Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 Object.janus_object_locked = BoolProperty(name="Locked", default=True)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
 Object.janus_object_visible = BoolProperty(name="Visible", default=True)
+Object.janus_object_color_active = BoolProperty(name="Set Color", default=False)
 Object.janus_object_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 Object.janus_object_websurface = BoolProperty(name="Websurface", default=False)
 Object.janus_object_websurface_url = StringProperty(name="URL", default="")
@@ -137,7 +141,9 @@ class ObjectPanel(Panel):
 			self.layout.prop(context.object, "janus_object_lighting")
 			self.layout.prop(context.object, "janus_object_visible")
 			if context.object.janus_object_visible:
-				self.layout.prop(context.object, "janus_object_color")
+				self.layout.prop(context.object, "janus_object_color_active")
+				if context.object.janus_object_color_active:
+					self.layout.prop(context.object, "janus_object_color")
 
 			self.layout.prop(context.object, "janus_object_websurface")
 			if context.object.janus_object_websurface:
@@ -165,6 +171,14 @@ Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
 Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
 
+Scene.janus_room_skybox_active = BoolProperty(name="Select Skybox Images", default=False)
+Scene.janus_room_skybox_left = StringProperty(name="Skybox Left", subtype="FILE_PATH")
+Scene.janus_room_skybox_right = StringProperty(name="Skybox Right", subtype="FILE_PATH")
+Scene.janus_room_skybox_front = StringProperty(name="Skybox Front", subtype="FILE_PATH")
+Scene.janus_room_skybox_back = StringProperty(name="Skybox Back", subtype="FILE_PATH")
+Scene.janus_room_skybox_up = StringProperty(name="Skybox Up", subtype="FILE_PATH")
+Scene.janus_room_skybox_down = StringProperty(name="Skybox Down", subtype="FILE_PATH")
+
 Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
 Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
 Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
@@ -184,6 +198,8 @@ Scene.janus_room_fog_start = FloatProperty(name="Start", default=1.0, min=0.0, m
 Scene.janus_room_fog_end = FloatProperty(name="End", default=100.0, min=0.0, max=100000.0)
 Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.8,0.8,0.8), subtype="COLOR", size=3, min=0.0, max=1.0)
 
+Scene.janus_room_locked = BoolProperty(name="Lock Room", default=False)
+
 class RoomPanel(Panel):
 	bl_label = "Room"
 	bl_space_type = "VIEW_3D"
@@ -196,6 +212,15 @@ class RoomPanel(Panel):
 			self.layout.prop(context.scene, "janus_room_visible")
 			if context.scene.janus_room_visible:
 				self.layout.prop(context.scene, "janus_room_color")
+				
+		self.layout.prop(context.scene, "janus_room_skybox_active")
+		if context.scene.janus_room_skybox_active:
+			self.layout.prop(context.scene, "janus_room_skybox_left")
+			self.layout.prop(context.scene, "janus_room_skybox_right")
+			self.layout.prop(context.scene, "janus_room_skybox_front")
+			self.layout.prop(context.scene, "janus_room_skybox_back")
+			self.layout.prop(context.scene, "janus_room_skybox_up")
+			self.layout.prop(context.scene, "janus_room_skybox_down")		
 			
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
@@ -220,7 +245,10 @@ class RoomPanel(Panel):
 				elif context.scene.janus_room_fog_mode == "linear":
 						self.layout.prop(context.scene, "janus_room_fog_start")
 						self.layout.prop(context.scene, "janus_room_fog_end")
+		
+		self.layout.prop(context.scene, "janus_room_locked")
 
+Scene.janus_server_default = BoolProperty(name="Default Server", default=True)		
 Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
 Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
@@ -230,8 +258,10 @@ class ServerPanel(Panel):
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "janus_server")
-		self.layout.prop(context.scene, "janus_server_port")
+		self.layout.prop(context.scene, "janus_server_default")
+		if context.scene.janus_server_default != True:
+			self.layout.prop(context.scene, "janus_server")
+			self.layout.prop(context.scene, "janus_server_port")
 
 
 Scene.janus_debug = BoolProperty(name="JanusVR", default=False)
@@ -298,7 +328,10 @@ class VRJanusPath(Operator, ExportHelper):
 	bl_options = {"PRESET", "UNDO"}
 
 	use_filter = False
-	filename_ext = ""
+	if os.name != "nt":
+		filename_ext = ""
+	else:
+		filename_ext = ".exe"
 	filter_glob = ""
 	
 	def execute(self, context):
@@ -350,19 +383,20 @@ class VRJanus(Operator):
 			self.report({"ERROR"}, "Did not export scene.")
 			return {"FINISHED"}			
 	
-		ipfs.start()
+		if context.scene.janus_ipfs:
+			ipfs.start()
 		
-		hashes = ipfs.addRecursive(filepath)
+			hashes = ipfs.addRecursive(filepath)
 	
-		if not hashes:
-			self.report({"ERROR"}, "IPFS Error")
-			return {"FINISHED"}
+			if not hashes:
+				self.report({"ERROR"}, "IPFS Error")
+				return {"FINISHED"}
 			
-		gateway = getURL(context, hashes)
+			gateway = getURL(context, hashes)
 		
-		context.scene.roomhash = gateway
+			context.scene.roomhash = gateway
 			
-		self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
+			self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
 		
 		args = []
 		if not context.scene.janus_fullscreen:
@@ -374,13 +408,19 @@ class VRJanus(Operator):
 			
 		args += ["render", context.scene.janus_rendermode]
 		args += ["rate", str(context.scene.janus_updaterate)]
+		
+		if not context.scene.janus_ipfs:
+			filepath += "\index.html"
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
 			params = {}
 			if not context.scene.janus_debug:
 				params = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
-			subprocess.Popen([januspath]+args+[gateway], close_fds=True, **params)
+			if context.scene.janus_ipfs:
+				subprocess.Popen([januspath]+args+[gateway], close_fds=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+			else:
+				subprocess.Popen([januspath]+args+[filepath])
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}

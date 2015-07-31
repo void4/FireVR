@@ -52,8 +52,6 @@ def write_html(scene, filepath, path_mode):
 	assets = Tag("Assets")
 	
 	attr=[
-		("server",scene.janus_server),
-		("port",scene.janus_server_port),
 		("fwd","0 0 1"),
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
@@ -71,6 +69,13 @@ def write_html(scene, filepath, path_mode):
 		("fog_start", f2s(scene.janus_room_fog_start)),
 		("fog_end", f2s(scene.janus_room_fog_end)),
 		("fog_col", v2s(scene.janus_room_fog_col)),
+		("locked", b2s(scene.janus_room_locked)),
+		]
+	
+	if scene.janus_server_default!=True:
+		attr += [
+		("server",scene.janus_server),
+		("port",scene.janus_server_port),
 		]
 	
 	if scene.camera:
@@ -85,6 +90,25 @@ def write_html(scene, filepath, path_mode):
 		("visible",b2s(scene.janus_room_visible)),
 		("col",v2s(scene.janus_room_color)),
 		]
+		
+	if scene.janus_room_skybox_active:
+		attr += [
+		("skybox_left_id","sky_left"),
+		("skybox_right_id","sky_right"),
+		("skybox_front_id","sky_front"),
+		("skybox_back_id","sky_back"),
+		("skybox_up_id","sky_up"),
+		("skybox_down_id","sky_down"),
+		]
+		
+		sky_image = [(scene.janus_room_skybox_left,"sky_left"),(scene.janus_room_skybox_right,"sky_right"),(scene.janus_room_skybox_front,"sky_front"),(scene.janus_room_skybox_back,"sky_back"),(scene.janus_room_skybox_up,"sky_up"),(scene.janus_room_skybox_down,"sky_down")]
+		
+		for sky in sky_image:
+			skyname = os.path.basename(sky[0])
+			assetimage = Tag("AssetImage", attr=[("id",sky[1]), ("src",skyname)])
+			if not assetimage in assets:
+				assets(assetimage)
+				shutil.copyfile(src=sky[0], dst=os.path.join(filepath, skyname))	
 
 	room = Tag("Room", attr)
 	
@@ -135,7 +159,7 @@ def write_html(scene, filepath, path_mode):
 				exportedmeshes.append(o.data.name)
 				assets(ob)
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color)), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
+			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color) if o.janus_object_color_active else "1 1 1"), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
 			
 			if o.janus_object_websurface and o.janus_object_websurface_url:
 					if not o.janus_object_websurface_url in exportedsurfaces:
