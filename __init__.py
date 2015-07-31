@@ -171,6 +171,14 @@ Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
 Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
 Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
 
+Scene.janus_room_skybox_active = BoolProperty(name="Select Skybox Images", default=False)
+Scene.janus_room_skybox_left = StringProperty(name="Skybox Left", subtype="FILE_PATH")
+Scene.janus_room_skybox_right = StringProperty(name="Skybox Right", subtype="FILE_PATH")
+Scene.janus_room_skybox_front = StringProperty(name="Skybox Front", subtype="FILE_PATH")
+Scene.janus_room_skybox_back = StringProperty(name="Skybox Back", subtype="FILE_PATH")
+Scene.janus_room_skybox_up = StringProperty(name="Skybox Up", subtype="FILE_PATH")
+Scene.janus_room_skybox_down = StringProperty(name="Skybox Down", subtype="FILE_PATH")
+
 Scene.janus_room_gravity = FloatProperty(name="Gravity", default=-9.8, min=-100, max=100)
 Scene.janus_room_walkspeed = FloatProperty(name="Walk Speed", default=1.8, min=-100, max=100)
 Scene.janus_room_runspeed = FloatProperty(name="Run Speed", default=5.4, min=-100, max=100)
@@ -204,6 +212,15 @@ class RoomPanel(Panel):
 			self.layout.prop(context.scene, "janus_room_visible")
 			if context.scene.janus_room_visible:
 				self.layout.prop(context.scene, "janus_room_color")
+				
+		self.layout.prop(context.scene, "janus_room_skybox_active")
+		if context.scene.janus_room_skybox_active:
+			self.layout.prop(context.scene, "janus_room_skybox_left")
+			self.layout.prop(context.scene, "janus_room_skybox_right")
+			self.layout.prop(context.scene, "janus_room_skybox_front")
+			self.layout.prop(context.scene, "janus_room_skybox_back")
+			self.layout.prop(context.scene, "janus_room_skybox_up")
+			self.layout.prop(context.scene, "janus_room_skybox_down")		
 			
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
