@@ -230,7 +230,8 @@ class RoomPanel(Panel):
 						self.layout.prop(context.scene, "janus_room_fog_end")
 		
 		self.layout.prop(context.scene, "janus_room_locked")
-		
+
+Scene.janus_server_default = BoolProperty(name="Default Server", default=True)		
 Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
 Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
@@ -240,8 +241,10 @@ class ServerPanel(Panel):
 	bl_region_type = "TOOLS"
 	
 	def draw(self, context):
-		self.layout.prop(context.scene, "janus_server")
-		self.layout.prop(context.scene, "janus_server_port")
+		self.layout.prop(context.scene, "janus_server_default")
+		if context.scene.janus_server_default != True:
+			self.layout.prop(context.scene, "janus_server")
+			self.layout.prop(context.scene, "janus_server_port")
 
 
 Scene.janus_debug = BoolProperty(name="JanusVR", default=False)
