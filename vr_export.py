@@ -52,8 +52,6 @@ def write_html(scene, filepath, path_mode):
 	assets = Tag("Assets")
 	
 	attr=[
-		("server",scene.janus_server),
-		("port",scene.janus_server_port),
 		("fwd","0 0 1"),
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
@@ -72,6 +70,12 @@ def write_html(scene, filepath, path_mode):
 		("fog_end", f2s(scene.janus_room_fog_end)),
 		("fog_col", v2s(scene.janus_room_fog_col)),
 		("locked", b2s(scene.janus_room_locked)),
+		]
+	
+	if scene.janus_server_default!=True:
+		attr += [
+		("server",scene.janus_server),
+		("port",scene.janus_server_port),
 		]
 	
 	if scene.camera:
