@@ -90,6 +90,25 @@ def write_html(scene, filepath, path_mode):
 		("visible",b2s(scene.janus_room_visible)),
 		("col",v2s(scene.janus_room_color)),
 		]
+		
+	if scene.janus_room_skybox_active:
+		attr += [
+		("skybox_left_id","sky_left"),
+		("skybox_right_id","sky_right"),
+		("skybox_front_id","sky_front"),
+		("skybox_back_id","sky_back"),
+		("skybox_up_id","sky_up"),
+		("skybox_down_id","sky_down"),
+		]
+		
+		sky_image = [(scene.janus_room_skybox_left,"sky_left"),(scene.janus_room_skybox_right,"sky_right"),(scene.janus_room_skybox_front,"sky_front"),(scene.janus_room_skybox_back,"sky_back"),(scene.janus_room_skybox_up,"sky_up"),(scene.janus_room_skybox_down,"sky_down")]
+		
+		for sky in sky_image:
+			skyname = os.path.basename(sky[0])
+			assetimage = Tag("AssetImage", attr=[("id",sky[1]), ("src",skyname)])
+			if not assetimage in assets:
+				assets(assetimage)
+				shutil.copyfile(src=sky[0], dst=os.path.join(filepath, skyname))	
 
 	room = Tag("Room", attr)
 	
