@@ -305,7 +305,10 @@ class VRJanusPath(Operator, ExportHelper):
 	bl_options = {"PRESET", "UNDO"}
 
 	use_filter = False
-	filename_ext = ""
+	if os.name != "nt":
+		filename_ext = ""
+	else:
+		filename_ext = ".exe"
 	filter_glob = ""
 	
 	def execute(self, context):
