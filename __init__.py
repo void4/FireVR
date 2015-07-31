@@ -184,6 +184,8 @@ Scene.janus_room_fog_start = FloatProperty(name="Start", default=1.0, min=0.0, m
 Scene.janus_room_fog_end = FloatProperty(name="End", default=100.0, min=0.0, max=100000.0)
 Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.8,0.8,0.8), subtype="COLOR", size=3, min=0.0, max=1.0)
 
+Scene.janus_room_locked = BoolProperty(name="Lock Room", default=False)
+
 class RoomPanel(Panel):
 	bl_label = "Room"
 	bl_space_type = "VIEW_3D"
@@ -220,7 +222,9 @@ class RoomPanel(Panel):
 				elif context.scene.janus_room_fog_mode == "linear":
 						self.layout.prop(context.scene, "janus_room_fog_start")
 						self.layout.prop(context.scene, "janus_room_fog_end")
-
+		
+		self.layout.prop(context.scene, "janus_room_locked")
+		
 Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
 Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
