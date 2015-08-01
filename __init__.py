@@ -410,7 +410,7 @@ class VRJanus(Operator):
 		args += ["rate", str(context.scene.janus_updaterate)]
 		
 		if not context.scene.janus_ipfs:
-			filepath += "\index.html"
+			filepath = os.path.join(filepath, "index.html")
 			
 		januspath = hasv(context, "januspath")
 		if januspath:
