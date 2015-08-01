@@ -118,7 +118,24 @@ def write_html(scene, filepath, path_mode):
 				assetscript = Tag("AssetScript", attr=[("src",scriptname)])
 				if not assetscript in assets:
 					assets(assetscript)
-					shutil.copyfile(src=script_entry, dst=os.path.join(filepath, scriptname))				
+					shutil.copyfile(src=script_entry, dst=os.path.join(filepath, scriptname))
+
+	if scene.janus_room_shader_active:		
+		if scene.janus_room_shader_frag != "":
+			fragname = os.path.basename(scene.janus_room_shader_frag)
+		if scene.janus_room_shader_vert != "":
+			vertname = os.path.basename(scene.janus_room_shader_vert)
+		else:
+			vertname = ""
+		if fragname:
+			attr += [("shader_id", fragname)]
+		assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
+		if not assetshader in assets:
+			assets(assetshader)
+			if fragname:
+				shutil.copyfile(src=scene.janus_room_shader_frag, dst=os.path.join(filepath, fragname))
+			if vertname:
+				shutil.copyfile(src=scene.janus_room_shader_vert, dst=os.path.join(filepath, vertname))						
 				
 	room = Tag("Room", attr)
 	

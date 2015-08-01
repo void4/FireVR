@@ -204,6 +204,10 @@ Scene.janus_room_script2 = StringProperty(name="Script 2", subtype="FILE_PATH")
 Scene.janus_room_script3 = StringProperty(name="Script 3", subtype="FILE_PATH")
 Scene.janus_room_script4 = StringProperty(name="Script 4", subtype="FILE_PATH")
 
+Scene.janus_room_shader_active = BoolProperty(name="Global GLSL Shader", default=False)
+Scene.janus_room_shader_frag = StringProperty(name="Frag Shader", subtype="FILE_PATH")
+Scene.janus_room_shader_vert = StringProperty(name="Vertex Shader", subtype="FILE_PATH")
+
 Scene.janus_room_locked = BoolProperty(name="Lock Room", default=False)
 
 class RoomPanel(Panel):
@@ -261,6 +265,11 @@ class RoomPanel(Panel):
 					self.layout.prop(context.scene, "janus_room_script3")
 					if context.scene.janus_room_script3:
 						self.layout.prop(context.scene, "janus_room_script4")
+						
+		self.layout.prop(context.scene, "janus_room_shader_active")
+		if context.scene.janus_room_shader_active:
+			self.layout.prop(context.scene, "janus_room_shader_frag")
+			self.layout.prop(context.scene, "janus_room_shader_vert")
 						
 		self.layout.prop(context.scene, "janus_room_locked")
 
