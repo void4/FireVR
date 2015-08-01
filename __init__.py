@@ -198,6 +198,12 @@ Scene.janus_room_fog_start = FloatProperty(name="Start", default=1.0, min=0.0, m
 Scene.janus_room_fog_end = FloatProperty(name="End", default=100.0, min=0.0, max=100000.0)
 Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.8,0.8,0.8), subtype="COLOR", size=3, min=0.0, max=1.0)
 
+Scene.janus_room_script_active = BoolProperty(name="Asset Scripts", default=False)
+Scene.janus_room_script1 = StringProperty(name="Script 1", subtype="FILE_PATH")
+Scene.janus_room_script2 = StringProperty(name="Script 2", subtype="FILE_PATH")
+Scene.janus_room_script3 = StringProperty(name="Script 3", subtype="FILE_PATH")
+Scene.janus_room_script4 = StringProperty(name="Script 4", subtype="FILE_PATH")
+
 Scene.janus_room_locked = BoolProperty(name="Lock Room", default=False)
 
 class RoomPanel(Panel):
@@ -245,7 +251,17 @@ class RoomPanel(Panel):
 				elif context.scene.janus_room_fog_mode == "linear":
 						self.layout.prop(context.scene, "janus_room_fog_start")
 						self.layout.prop(context.scene, "janus_room_fog_end")
-		
+
+		self.layout.prop(context.scene, "janus_room_script_active")
+		if context.scene.janus_room_script_active:
+			self.layout.prop(context.scene, "janus_room_script1")
+			if context.scene.janus_room_script1:
+				self.layout.prop(context.scene, "janus_room_script2")
+				if context.scene.janus_room_script2:
+					self.layout.prop(context.scene, "janus_room_script3")
+					if context.scene.janus_room_script3:
+						self.layout.prop(context.scene, "janus_room_script4")
+						
 		self.layout.prop(context.scene, "janus_room_locked")
 
 Scene.janus_server_default = BoolProperty(name="Default Server", default=True)		

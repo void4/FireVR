@@ -110,6 +110,16 @@ def write_html(scene, filepath, path_mode):
 				assets(assetimage)
 				shutil.copyfile(src=sky[0], dst=os.path.join(filepath, skyname))	
 
+	if scene.janus_room_script_active:	
+		script_list = [scene.janus_room_script1,scene.janus_room_script2,scene.janus_room_script3,scene.janus_room_script4]
+		for script_entry in script_list:
+			if script_entry != "":
+				scriptname = os.path.basename(script_entry)
+				assetscript = Tag("AssetScript", attr=[("src",scriptname)])
+				if not assetscript in assets:
+					assets(assetscript)
+					shutil.copyfile(src=script_entry, dst=os.path.join(filepath, scriptname))				
+				
 	room = Tag("Room", attr)
 	
 	useractive = scene.objects.active
