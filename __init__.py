@@ -259,7 +259,7 @@ class ServerPanel(Panel):
 	
 	def draw(self, context):
 		self.layout.prop(context.scene, "janus_server_default")
-		if context.scene.janus_server_default != True:
+		if not context.scene.janus_server_default:
 			self.layout.prop(context.scene, "janus_server")
 			self.layout.prop(context.scene, "janus_server_port")
 
