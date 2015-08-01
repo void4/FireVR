@@ -194,6 +194,22 @@ def write_html(scene, filepath, path_mode):
 							exportedsurfaces.append(o.janus_object_websurface_url)
 					attr += [("websurface_id", o.janus_object_websurface_url)]
 			
+			if o.janus_object_shader_active:
+				if o.janus_object_shader_frag != "":
+					fragname = os.path.basename(o.janus_object_shader_frag)
+				if o.janus_object_shader_vert != "":
+					vertname = os.path.basename(o.janus_object_shader_vert)
+				else:
+					vertname = ""
+				if fragname:
+					assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
+					if not assetshader in assets:
+							assets(assetshader)
+							shutil.copyfile(src=o.janus_object_shader_frag, dst=os.path.join(filepath, fragname))
+							if vertname != "":
+								shutil.copyfile(src=o.janus_object_shader_vert, dst=os.path.join(filepath, vertname))
+					attr += [("shader_id", fragname)]
+			
 			room(Tag("Object", single=False, attr=attr))
 			o.location = loc
 		

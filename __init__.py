@@ -120,6 +120,9 @@ Object.janus_object_websurface = BoolProperty(name="Websurface", default=False)
 Object.janus_object_websurface_url = StringProperty(name="URL", default="")
 Object.janus_object_websurface_size = IntVectorProperty(name="", size=2, default=(1920, 1080), min=1, max=10000)
 Object.janus_object_cullface = EnumProperty(name="", default="back", items=tuple(tuple([e,e,e]) for e in ["back", "front", "none"]))
+Object.janus_object_shader_active = BoolProperty(name="GLSL Shader", default=False)
+Object.janus_object_shader_frag = StringProperty(name="Frag Shader", subtype="FILE_PATH")
+Object.janus_object_shader_vert = StringProperty(name="Vertex Shader", subtype="FILE_PATH")
 
 Object.janus_object_sound = StringProperty(name="Sound", subtype="FILE_PATH", default="")
 Object.janus_object_sound_xy1 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
@@ -151,9 +154,13 @@ class ObjectPanel(Panel):
 				self.layout.label("Width & Height")
 				self.layout.prop(context.object, "janus_object_websurface_size")
 
-
 			self.layout.label("Cull Face")
 			self.layout.prop(context.object, "janus_object_cullface")
+			
+			self.layout.prop(context.object, "janus_object_shader_active")
+			if context.object.janus_object_shader_active:
+				self.layout.prop(context.object, "janus_object_shader_frag")
+				self.layout.prop(context.object, "janus_object_shader_vert")
 
 		elif context.object.type=="SPEAKER":
 			self.layout.prop(context.object, "janus_object_sound")
