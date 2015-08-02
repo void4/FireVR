@@ -109,7 +109,7 @@ class RunSettingsPanel(Panel):
 			self.layout.prop(context.scene, "janus_size")
 
 Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
-
+Object.janus_object_jsid = StringProperty(name="js_id", default="")
 Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 Object.janus_object_locked = BoolProperty(name="Locked", default=True)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
@@ -120,6 +120,9 @@ Object.janus_object_websurface = BoolProperty(name="Websurface", default=False)
 Object.janus_object_websurface_url = StringProperty(name="URL", default="")
 Object.janus_object_websurface_size = IntVectorProperty(name="", size=2, default=(1920, 1080), min=1, max=10000)
 Object.janus_object_cullface = EnumProperty(name="", default="back", items=tuple(tuple([e,e,e]) for e in ["back", "front", "none"]))
+Object.janus_object_shader_active = BoolProperty(name="GLSL Shader", default=False)
+Object.janus_object_shader_frag = StringProperty(name="Frag Shader", subtype="FILE_PATH")
+Object.janus_object_shader_vert = StringProperty(name="Vertex Shader", subtype="FILE_PATH")
 
 Object.janus_object_sound = StringProperty(name="Sound", subtype="FILE_PATH", default="")
 Object.janus_object_sound_xy1 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
@@ -136,6 +139,7 @@ class ObjectPanel(Panel):
 		
 		if context.object.type == "MESH":
 			self.layout.prop(context.scene, "janus_object_export")
+			self.layout.prop(context.object, "janus_object_jsid")
 			self.layout.prop(context.object, "janus_object_collision")
 			self.layout.prop(context.object, "janus_object_locked")
 			self.layout.prop(context.object, "janus_object_lighting")
@@ -151,9 +155,13 @@ class ObjectPanel(Panel):
 				self.layout.label("Width & Height")
 				self.layout.prop(context.object, "janus_object_websurface_size")
 
-
 			self.layout.label("Cull Face")
 			self.layout.prop(context.object, "janus_object_cullface")
+			
+			self.layout.prop(context.object, "janus_object_shader_active")
+			if context.object.janus_object_shader_active:
+				self.layout.prop(context.object, "janus_object_shader_frag")
+				self.layout.prop(context.object, "janus_object_shader_vert")
 
 		elif context.object.type=="SPEAKER":
 			self.layout.prop(context.object, "janus_object_sound")
@@ -197,6 +205,16 @@ Scene.janus_room_fog_density = FloatProperty(name="Density", default=0.2, min=0.
 Scene.janus_room_fog_start = FloatProperty(name="Start", default=1.0, min=0.0, max=100000.0)
 Scene.janus_room_fog_end = FloatProperty(name="End", default=100.0, min=0.0, max=100000.0)
 Scene.janus_room_fog_col = FloatVectorProperty(name="Color", default=(0.8,0.8,0.8), subtype="COLOR", size=3, min=0.0, max=1.0)
+
+Scene.janus_room_script_active = BoolProperty(name="Asset Scripts", default=False)
+Scene.janus_room_script1 = StringProperty(name="Script 1", subtype="FILE_PATH")
+Scene.janus_room_script2 = StringProperty(name="Script 2", subtype="FILE_PATH")
+Scene.janus_room_script3 = StringProperty(name="Script 3", subtype="FILE_PATH")
+Scene.janus_room_script4 = StringProperty(name="Script 4", subtype="FILE_PATH")
+
+Scene.janus_room_shader_active = BoolProperty(name="Global GLSL Shader", default=False)
+Scene.janus_room_shader_frag = StringProperty(name="Frag Shader", subtype="FILE_PATH")
+Scene.janus_room_shader_vert = StringProperty(name="Vertex Shader", subtype="FILE_PATH")
 
 Scene.janus_room_locked = BoolProperty(name="Lock Room", default=False)
 
@@ -245,7 +263,22 @@ class RoomPanel(Panel):
 				elif context.scene.janus_room_fog_mode == "linear":
 						self.layout.prop(context.scene, "janus_room_fog_start")
 						self.layout.prop(context.scene, "janus_room_fog_end")
-		
+
+		self.layout.prop(context.scene, "janus_room_script_active")
+		if context.scene.janus_room_script_active:
+			self.layout.prop(context.scene, "janus_room_script1")
+			if context.scene.janus_room_script1:
+				self.layout.prop(context.scene, "janus_room_script2")
+				if context.scene.janus_room_script2:
+					self.layout.prop(context.scene, "janus_room_script3")
+					if context.scene.janus_room_script3:
+						self.layout.prop(context.scene, "janus_room_script4")
+						
+		self.layout.prop(context.scene, "janus_room_shader_active")
+		if context.scene.janus_room_shader_active:
+			self.layout.prop(context.scene, "janus_room_shader_frag")
+			self.layout.prop(context.scene, "janus_room_shader_vert")
+						
 		self.layout.prop(context.scene, "janus_room_locked")
 
 Scene.janus_server_default = BoolProperty(name="Default Server", default=True)		

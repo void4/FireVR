@@ -110,6 +110,33 @@ def write_html(scene, filepath, path_mode):
 				assets(assetimage)
 				shutil.copyfile(src=sky[0], dst=os.path.join(filepath, skyname))	
 
+	if scene.janus_room_script_active:	
+		script_list = [scene.janus_room_script1,scene.janus_room_script2,scene.janus_room_script3,scene.janus_room_script4]
+		for script_entry in script_list:
+			if script_entry != "":
+				scriptname = os.path.basename(script_entry)
+				assetscript = Tag("AssetScript", attr=[("src",scriptname)])
+				if not assetscript in assets:
+					assets(assetscript)
+					shutil.copyfile(src=script_entry, dst=os.path.join(filepath, scriptname))
+
+	if scene.janus_room_shader_active:		
+		if scene.janus_room_shader_frag != "":
+			fragname = os.path.basename(scene.janus_room_shader_frag)
+		if scene.janus_room_shader_vert != "":
+			vertname = os.path.basename(scene.janus_room_shader_vert)
+		else:
+			vertname = ""
+		if fragname:
+			attr += [("shader_id", fragname)]
+		assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
+		if not assetshader in assets:
+			assets(assetshader)
+			if fragname:
+				shutil.copyfile(src=scene.janus_room_shader_frag, dst=os.path.join(filepath, fragname))
+			if vertname:
+				shutil.copyfile(src=scene.janus_room_shader_vert, dst=os.path.join(filepath, vertname))						
+				
 	room = Tag("Room", attr)
 	
 	useractive = scene.objects.active
@@ -161,11 +188,30 @@ def write_html(scene, filepath, path_mode):
 			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
 			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color) if o.janus_object_color_active else "1 1 1"), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
 			
+			if o.janus_object_jsid:
+				attr += [("js_id",o.janus_object_jsid)]
+			
 			if o.janus_object_websurface and o.janus_object_websurface_url:
 					if not o.janus_object_websurface_url in exportedsurfaces:
 							assets(Tag("AssetWebSurface", attr=[("id", o.janus_object_websurface_url), ("src", o.janus_object_websurface_url), ("width", o.janus_object_websurface_size[0]), ("height", o.janus_object_websurface_size[1])]))
 							exportedsurfaces.append(o.janus_object_websurface_url)
 					attr += [("websurface_id", o.janus_object_websurface_url)]
+			
+			if o.janus_object_shader_active:
+				if o.janus_object_shader_frag != "":
+					fragname = os.path.basename(o.janus_object_shader_frag)
+				if o.janus_object_shader_vert != "":
+					vertname = os.path.basename(o.janus_object_shader_vert)
+				else:
+					vertname = ""
+				if fragname:
+					assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
+					if not assetshader in assets:
+							assets(assetshader)
+							shutil.copyfile(src=o.janus_object_shader_frag, dst=os.path.join(filepath, fragname))
+							if vertname != "":
+								shutil.copyfile(src=o.janus_object_shader_vert, dst=os.path.join(filepath, vertname))
+					attr += [("shader_id", fragname)]
 			
 			room(Tag("Object", single=False, attr=attr))
 			o.location = loc
