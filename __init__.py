@@ -109,7 +109,7 @@ class RunSettingsPanel(Panel):
 			self.layout.prop(context.scene, "janus_size")
 
 Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
-
+Object.janus_object_jsid = StringProperty(name="js_id", default="")
 Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 Object.janus_object_locked = BoolProperty(name="Locked", default=True)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
@@ -139,6 +139,7 @@ class ObjectPanel(Panel):
 		
 		if context.object.type == "MESH":
 			self.layout.prop(context.scene, "janus_object_export")
+			self.layout.prop(context.object, "janus_object_jsid")
 			self.layout.prop(context.object, "janus_object_collision")
 			self.layout.prop(context.object, "janus_object_locked")
 			self.layout.prop(context.object, "janus_object_lighting")
