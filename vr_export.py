@@ -145,6 +145,7 @@ def write_html(scene, filepath, path_mode):
 	exportedsurfaces = []
 
 	if  scene.janus_unpack:
+		bpy.ops.file.make_paths_relative()
 		bpy.ops.file.unpack_all(method='USE_LOCAL')
 		bpy.ops.file.make_paths_absolute()
 	
