@@ -9,13 +9,11 @@ It generates the XML description of the room automatically, exports the objects 
 ##Requirements
 
 - [JanusVR](http://www.janusvr.com/)
-- [IPFS](http://ipfs.io/docs/install/) * required for IPFS publication
+- [IPFS](http://ipfs.io/docs/install/) *only required for IPFS publication
 
 To use IPFS:
-
-  IPFS must be present in the PATH.
-  
-  When not using the IPFS gateway, you need to run the IPFS daemon locally ("ipfs daemon").
+- IPFS must be present in the PATH.
+- When not using the IPFS gateway, you need to run the IPFS daemon locally ("ipfs daemon").
 
 
 This addon was tested under Ubuntu/Linux and Windows. Your feedback is welcome!
