@@ -125,6 +125,7 @@ Object.janus_object_shader_frag = StringProperty(name="Frag Shader", subtype="FI
 Object.janus_object_shader_vert = StringProperty(name="Vertex Shader", subtype="FILE_PATH")
 
 Object.janus_object_sound = StringProperty(name="Sound", subtype="FILE_PATH", default="")
+Object.janus_object_sound_dist = FloatProperty(name="Distance", default=1)
 Object.janus_object_sound_xy1 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
 Object.janus_object_sound_xy2 = FloatVectorProperty(name="", size=2, default=(0, 0), min=-10000, max=10000)
 Object.janus_object_sound_loop = BoolProperty(name="Loop", default=False)
@@ -165,6 +166,8 @@ class ObjectPanel(Panel):
 
 		elif context.object.type=="SPEAKER":
 			self.layout.prop(context.object, "janus_object_sound")
+			self.layout.prop(context.object, "janus_object_jsid")
+			self.layout.prop(context.object, "janus_object_sound_dist")
 			self.layout.label("XY1")
 			self.layout.prop(context.object, "janus_object_sound_xy1")
 			self.layout.label("XY2")
