@@ -67,7 +67,7 @@ Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
 Scene.janus_ipnsname = StringProperty(name="", default="myroom")
 
 Scene.janus_apply_rot = BoolProperty(name="Apply Rotation", default=True)
-Scene.janus_apply_scale = BoolProperty(name="Apply Scale", default=False)
+Scene.janus_apply_scale = BoolProperty(name="Apply Scale", default=True)
 Scene.janus_apply_pos = BoolProperty(name="Apply Position", default=False)
 Scene.janus_unpack = BoolProperty(name="Unpack Textures", default=True)
 
@@ -111,7 +111,7 @@ class RunSettingsPanel(Panel):
 Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 Object.janus_object_jsid = StringProperty(name="js_id", default="")
 Object.janus_object_collision = BoolProperty(name="Collision", default=True)
-Object.janus_object_locked = BoolProperty(name="Locked", default=True)
+Object.janus_object_locked = BoolProperty(name="Locked", default=False)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
 Object.janus_object_visible = BoolProperty(name="Visible", default=True)
 Object.janus_object_color_active = BoolProperty(name="Set Color", default=False)
@@ -180,7 +180,7 @@ rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "roo
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
 Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
 Scene.janus_room_color = FloatVectorProperty(name="Color", default=(1.0,1.0,1.0), subtype="COLOR", size=3, min=0.0, max=1.0)
-Scene.janus_room_visible = BoolProperty(name="Visible", default=True)
+Scene.janus_room_visible = BoolProperty(name="Visible", default=False)
 
 Scene.janus_room_skybox_active = BoolProperty(name="Select Skybox Images", default=False)
 Scene.janus_room_skybox_left = StringProperty(name="Skybox Left", subtype="FILE_PATH")
