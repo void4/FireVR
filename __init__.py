@@ -366,9 +366,16 @@ class VRJanusPath(Operator, ExportHelper):
 	use_filter = False
 	if os.name != "nt":
 		filename_ext = ""
+		filter_glob = StringProperty(
+        default="janusvr",
+        options={'HIDDEN'},
+        )
 	else:
 		filename_ext = ".exe"
-	filter_glob = ""
+		filter_glob = StringProperty(
+        default="janusvr.exe",
+        options={'HIDDEN'},
+        )
 	
 	def execute(self, context):
 		keywords = self.as_keywords(ignore=("filter_glob","check_existing"))
