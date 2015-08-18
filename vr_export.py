@@ -145,6 +145,7 @@ def write_html(scene, filepath, path_mode):
 	exportedsurfaces = []
 
 	if  scene.janus_unpack:
+		bpy.ops.file.make_paths_relative()
 		bpy.ops.file.unpack_all(method='USE_LOCAL')
 		bpy.ops.file.make_paths_absolute()
 	
@@ -233,7 +234,7 @@ def write_html(scene, filepath, path_mode):
 				if not assetsound in assets:
 					assets(assetsound)
 					shutil.copyfile(src=o.janus_object_sound, dst=os.path.join(filepath, name))
-				sound = Tag("Sound", attr=[("id", name), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
+				sound = Tag("Sound", attr=[("id", name), ("js_id", o.janus_object_jsid), ("pos", p2s(o.location)), ("dist", f2s(o.janus_object_sound_dist)), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
 				room(sound)
 				
 	scene.objects.active = useractive
