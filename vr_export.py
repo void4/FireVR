@@ -228,14 +228,14 @@ def write_html(scene, filepath, path_mode):
 				
 				#bpy.ops.object.select_pattern(pattern=o.name, extend=False) # This apparently doesn't work on 2.78?
 				# Things to hardcode in the name of accident prevention:
-				# 1. Force export_scene.obj to use -Z Forward, Y Up, if it's currently using user defaults instead.
+				# 1. Force export_scene.obj to use -Z Forward, Y Up, if it's currently using user defaults instead. [done]
 				# 2. Figure out what's up with the COLLADA exporter (and force coordinate-related settings)
 				
 				if not o.data.name in exportedmeshes:
 					epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
 					if scene.janus_object_export==".obj":
 						with redirect_stdout(stdout):
-							bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
+							bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY", axis_forward='-Z', axis_up='Y')
 					else:
 						with redirect_stdout(stdout):
 							bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
