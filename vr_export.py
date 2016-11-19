@@ -40,9 +40,11 @@ def r2s(m):
 # Moved here from the original code in the MESH handler
 # Used for links based on placeholder planes.
 # Notably, I assume Euler X 90 YZ 0 is a standing link.
-def ir(attr, m):
-	rot = [" ".join([str(f) for f in list(v.xyz)]) for v in m.normalized()]
-	attr += [("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2]),]
+# (Later) this turned to be somewhat wrong, fixing it now.
+# Code still here in case this setup is useful for something.
+#def ir(attr, m):
+#	rot = [" ".join([str(f) for f in list(v.xyz)]) for v in m.normalized()]
+#	attr += [("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2]),]
 
 # Yes, it's probably inefficient, but I already tried messing around 
 #  with the function seen in ir, and it was painful.
@@ -57,6 +59,12 @@ def mtm(attr, m):
 	attr += [("xdir", p2s(list(m*Vector([-1,0,0,0]))[:3]))]
 	attr += [("ydir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 	attr += [("zdir", p2s(list(m*Vector([0,-1,0,0]))[:3]))]
+
+# And links.
+def mtl(attr, m):
+	attr += [("xdir", p2s(list(m*Vector([1,0,0,0]))[:3]))]
+	attr += [("ydir", p2s(list(m*Vector([0,1,0,0]))[:3]))]
+	attr += [("zdir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 
 def write_html(scene, filepath, path_mode):
 
@@ -293,9 +301,17 @@ def write_html(scene, filepath, path_mode):
 			elif o.janus_object_objtype == "JOT_LINK":
 				# Link is a separate object type now, allowing plane placeholders to allow some semblance of visual editing.
 				# portalaccounting deals with the fact Janus portals are centred at their bottom middle, not the centre like a plane placeholder
-				portalaccounting = (o.matrix_local * Vector([0.0, -(o.scale.x / 2.0), 0.0, 0.0])).xyz
-				attr = [("pos",p2s(o.location+portalaccounting)), ("scale",v2s(o.scale * 2.0)), ("url",o.janus_object_link_url), ("title",o.janus_object_link_name), ("col", v2s(o.color[:3]))]
-				ir(attr, o.matrix_local)
+				portalaccounting = (o.matrix_local.normalized() * Vector([0.0, -o.scale.y, -0.1, 0.0])).xyz
+				# leave an Empty marker for debug?
+				# for now just ruin state
+				# Scaling:
+				# ideal input is 1.58, 1.77
+				# ideal output is 3.06, 3.35, 1 approx???
+				# note; actual ratios used are post-portal position adjustments.
+				# 
+				attr = [("pos",p2s(o.location+portalaccounting)), ("url",o.janus_object_link_url), ("title",o.janus_object_link_name), ("col", v2s(o.color[:3]))]
+				attr += [("scale",v2s(Vector([o.scale.x * 1.93, o.scale.y * 2.00, 1.0])))]
+				mt2(attr, o.matrix_local)
 				if o.janus_object_jsid:
 					attr += [("js_id",o.janus_object_jsid)]
 				if not o.janus_object_active:

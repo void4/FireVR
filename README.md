@@ -74,6 +74,9 @@ Don't go into edit mode to resize it - just use the transform
 
 With this, you should be able to semi-accurately place portals.
 
+To check the orientation:
+Local Y should be up, Z should be facing outwards.
+
 I'm not quite sure it works completely accurately, and if not what's responsible, but it's a start.
 
 - **Link Name** The name displayed on the portal.
