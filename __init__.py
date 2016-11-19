@@ -59,6 +59,11 @@ class ToolPanel(Panel):
 		self.layout.operator("fire.html", icon_value=custom_icons["custom_icon"].icon_id)
 		if context.scene.roomhash:
 			self.layout.prop(context.scene, "roomhash")
+		# The licence of my contributions is public domain, too,
+		# but I would prefer if this note stuck around.
+		# Including the "Who needs sleep?" bit. - 20kdc, who needs sleep. (It's 2AM.)
+		self.layout.label("Warning: Export may apply transforms.")
+		self.layout.label("Save before usage. Who needs sleep?")
 		self.layout.operator("export_scene.html")
 
 Scene.janus_ipfs = BoolProperty(name="Use IPFS", default=False)
@@ -66,8 +71,8 @@ Scene.janus_gateway = BoolProperty(name="IPFS Gateway", default=False)
 Scene.janus_ipns = BoolProperty(name="IPNS", default=False)
 Scene.janus_ipnsname = StringProperty(name="", default="myroom")
 
-Scene.janus_apply_rot = BoolProperty(name="Apply Rotation", default=True)
-Scene.janus_apply_scale = BoolProperty(name="Apply Scale", default=True)
+Scene.janus_apply_rot = BoolProperty(name="Apply Rotation", default=False)
+Scene.janus_apply_scale = BoolProperty(name="Apply Scale", default=False)
 Scene.janus_apply_pos = BoolProperty(name="Apply Position", default=False)
 Scene.janus_unpack = BoolProperty(name="Unpack Textures", default=True)
 
@@ -110,6 +115,10 @@ class RunSettingsPanel(Panel):
 
 Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
 Object.janus_object_jsid = StringProperty(name="js_id", default="")
+Object.janus_object_objtype = EnumProperty(name="", default="JOT_OBJECT", items=(("JOT_NONE", "No Export", "Don't export this object."), ("JOT_OBJECT", "Object (model)", "<Object>"), ("JOT_LINK", "Link (portal)", "<Link>")))
+Object.janus_object_link_name = StringProperty(name="Link Name", default="")
+Object.janus_object_link_url = StringProperty(name="Link URL", default="")
+Object.janus_object_active = BoolProperty(name="Active", default=True)
 Object.janus_object_collision = BoolProperty(name="Collision", default=True)
 Object.janus_object_locked = BoolProperty(name="Locked", default=False)
 Object.janus_object_lighting = BoolProperty(name="Lighting", default=True)
@@ -139,31 +148,41 @@ class ObjectPanel(Panel):
 	def draw(self, context):
 		
 		if context.object.type == "MESH":
-			self.layout.prop(context.scene, "janus_object_export")
-			self.layout.prop(context.object, "janus_object_jsid")
-			self.layout.prop(context.object, "janus_object_collision")
-			self.layout.prop(context.object, "janus_object_locked")
-			self.layout.prop(context.object, "janus_object_lighting")
-			self.layout.prop(context.object, "janus_object_visible")
-			if context.object.janus_object_visible:
-				self.layout.prop(context.object, "janus_object_color_active")
-				if context.object.janus_object_color_active:
-					self.layout.prop(context.object, "janus_object_color")
+			self.layout.prop(context.object, "janus_object_objtype")
+			if context.object.janus_object_objtype != "JOT_NONE":
+				self.layout.prop(context.object, "janus_object_jsid")
+			if context.object.janus_object_objtype == "JOT_OBJECT":
+				self.layout.prop(context.scene, "janus_object_export")
+				self.layout.prop(context.object, "janus_object_collision")
+				self.layout.prop(context.object, "janus_object_locked")
+				self.layout.prop(context.object, "janus_object_lighting")
+				self.layout.prop(context.object, "janus_object_visible")
+				if context.object.janus_object_visible:
+					self.layout.prop(context.object, "janus_object_color_active")
+					if context.object.janus_object_color_active:
+						self.layout.prop(context.object, "janus_object_color")
 
-			self.layout.prop(context.object, "janus_object_websurface")
-			if context.object.janus_object_websurface:
-				self.layout.prop(context.object, "janus_object_websurface_url")
-				self.layout.label("Width & Height")
-				self.layout.prop(context.object, "janus_object_websurface_size")
+				self.layout.prop(context.object, "janus_object_websurface")
+				if context.object.janus_object_websurface:
+					self.layout.prop(context.object, "janus_object_websurface_url")
+					self.layout.label("Width & Height")
+					self.layout.prop(context.object, "janus_object_websurface_size")
 
-			self.layout.label("Cull Face")
-			self.layout.prop(context.object, "janus_object_cullface")
-			
-			self.layout.prop(context.object, "janus_object_shader_active")
-			if context.object.janus_object_shader_active:
-				self.layout.prop(context.object, "janus_object_shader_frag")
-				self.layout.prop(context.object, "janus_object_shader_vert")
-
+				self.layout.label("Cull Face")
+				self.layout.prop(context.object, "janus_object_cullface")
+				
+				self.layout.prop(context.object, "janus_object_shader_active")
+				if context.object.janus_object_shader_active:
+					self.layout.prop(context.object, "janus_object_shader_frag")
+					self.layout.prop(context.object, "janus_object_shader_vert")
+			elif context.object.janus_object_objtype == "JOT_LINK":
+				self.layout.label("Use a standard plane,")
+				self.layout.label(" and adjust the transform.")
+				self.layout.label("(Don't edit the mesh itself)")
+				self.layout.prop(context.object, "janus_object_link_name")
+				self.layout.prop(context.object, "janus_object_link_url")
+				self.layout.prop(context.object, "janus_object_active")
+		
 		elif context.object.type=="SPEAKER":
 			self.layout.prop(context.object, "janus_object_sound")
 			self.layout.prop(context.object, "janus_object_jsid")

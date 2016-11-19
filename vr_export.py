@@ -4,7 +4,7 @@ import shutil
 from contextlib import redirect_stdout
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 
 from .html import Tag
 from . import ipfs
@@ -26,9 +26,44 @@ def p2s(v):
 	v = [v[0],v[2],-v[1]]
 	return v2s(v)
 
+# "light" position to string
+# used in cases where inversing the Z would be an awful idea
+def lp2s(v):
+	v = [v[0],v[2],v[1]]
+	return v2s(v)
+
 # rotation to string
 def r2s(m):
 	return v2s(list(m*Vector([-1,0,0,0]))[:3])
+
+# insert rotation (used to give Object-style full rotation to anything that can take it)
+# moved here from the original code in the MESH handler
+# Since there's some special logic to deal with rotation now because of axis weirdness,
+# (I'm beginning to suspect the reason for the "Apply Rotation" hack is a lazy way out of this - suffice to say, I won't have it)
+# Used for links based on placeholder planes.
+# Notably, I assume Euler X -90 YZ 0 is a standing link, facing to the +Y direction. I could well be insane for thinking that -Y (blender) is forwards.
+def ir(attr, m):
+	rot = [" ".join([str(f) for f in list(v.xyz)]) for v in m.normalized()]
+	attr += [("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2]),]
+
+# If anyone complains about inefficiency, they can go write their version and run it through a test suite.
+# And test using Text objects, please. Lots of them, in MANY orientations.
+# *Then* talk to me (20kdc) about it.
+def mt2(attr, m):
+	attr += [("xdir", p2s(list(m*Vector([1,0,0,0]))[:3]))]
+	attr += [("ydir", p2s(list(m*Vector([0,1,0,0]))[:3]))]
+	attr += [("zdir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
+
+# Here's one that works for models.
+def mtm(attr, m):
+	attr += [("xdir", p2s(list(m*Vector([-1,0,0,0]))[:3]))]
+	attr += [("ydir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
+	attr += [("zdir", p2s(list(m*Vector([0,-1,0,0]))[:3]))]
+
+# Possible swaps:
+# 0, 1: FAIL
+# 2, 1: FAIL
+# 0, 2: FAIL
 
 def write_html(scene, filepath, path_mode):
 
@@ -151,78 +186,139 @@ def write_html(scene, filepath, path_mode):
 	
 	for o in bpy.data.objects:
 		if o.type=="MESH":
-			scene.objects.active = o
+			if o.janus_object_objtype == "JOT_OBJECT":
+				# A mesh. If the user really wants us to, apply things to it.
+				scene.objects.active = o
+				for so in bpy.context.selected_objects:
+					so.select = False
+				o.select = True
 
-			if scene.janus_apply_rot:
-				try:
-					with redirect_stdout(stdout):
-						bpy.ops.object.transform_apply(rotation=True)
-				except:
-					pass
-			if scene.janus_apply_scale:
-				try:
-					with redirect_stdout(stdout):
-						bpy.ops.object.transform_apply(scale=True)
-				except:
-					pass
-			if scene.janus_apply_pos:
-				try:
-					with redirect_stdout(stdout):
-						bpy.ops.object.transform_apply(position=True)
-				except:
-					pass
-			loc = o.location.copy()
-			o.location = [0, 0, 0]
-			bpy.ops.object.select_pattern(pattern=o.name, extend=False)
-			if not o.data.name in exportedmeshes:
-				epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
-				if scene.janus_object_export==".obj":
-					with redirect_stdout(stdout):
-						bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
-				else:
-					with redirect_stdout(stdout):
-						bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
-						# TODO differentiate between per-object and per-mesh properties
-				ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
-				exportedmeshes.append(o.data.name)
-				assets(ob)
-			rot = [" ".join([str(f) for f in list(v.xyz)]) for v in o.matrix_local.normalized()]
-			attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color) if o.janus_object_color_active else "1 1 1"), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc)), ("scale", v2s(o.scale)), ("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2])]
-			
-			if o.janus_object_jsid:
-				attr += [("js_id",o.janus_object_jsid)]
-			
-			if o.janus_object_websurface and o.janus_object_websurface_url:
-					if not o.janus_object_websurface_url in exportedsurfaces:
-							assets(Tag("AssetWebSurface", attr=[("id", o.janus_object_websurface_url), ("src", o.janus_object_websurface_url), ("width", o.janus_object_websurface_size[0]), ("height", o.janus_object_websurface_size[1])]))
-							exportedsurfaces.append(o.janus_object_websurface_url)
-					attr += [("websurface_id", o.janus_object_websurface_url)]
-			
-			if o.janus_object_shader_active:
-				if o.janus_object_shader_frag != "":
-					fragname = os.path.basename(o.janus_object_shader_frag)
-				if o.janus_object_shader_vert != "":
-					vertname = os.path.basename(o.janus_object_shader_vert)
-				else:
-					vertname = ""
-				if fragname:
-					assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
-					if not assetshader in assets:
-							assets(assetshader)
-							shutil.copyfile(src=o.janus_object_shader_frag, dst=os.path.join(filepath, fragname))
-							if vertname != "":
-								shutil.copyfile(src=o.janus_object_shader_vert, dst=os.path.join(filepath, vertname))
-					attr += [("shader_id", fragname)]
-			
-			room(Tag("Object", single=False, attr=attr))
-			o.location = loc
+				if scene.janus_apply_rot:
+					try:
+						with redirect_stdout(stdout):
+							bpy.ops.object.transform_apply(rotation=True)
+					except:
+						pass
+				if scene.janus_apply_scale:
+					try:
+						with redirect_stdout(stdout):
+							bpy.ops.object.transform_apply(scale=True)
+					except:
+						pass
+				if scene.janus_apply_pos:
+					try:
+						with redirect_stdout(stdout):
+							bpy.ops.object.transform_apply(position=True)
+					except:
+						pass
+				loc = o.location.copy()
+				o.location = [0, 0, 0]
+				
+				oldrotmode = o.rotation_mode
+				oldrotquat = o.rotation_quaternion.copy()
+				oldroteu = o.rotation_euler.copy()
+				oldrotax = [x for x in o.rotation_axis_angle]
+				
+				# note: scale may or may not actually be reverted, depends on what testing finds. It's 1:27 AM, so please don't bug me about it.
+				# if NOT applying rotation/scale, then stop the exporters from doing annoying things like preserving rotation (which they do)
+				# if applying rotation/scale, then the exporters can do whatever, since it's all meant to be baked into the file
+				# it seems the local matrix disappears after this and doesn't come back when the parameters return, so grab it now
+				rotmatrix = o.matrix_local.copy()
+				if not scene.janus_apply_rot:
+					o.rotation_mode = "QUATERNION"
+					o.rotation_quaternion = Quaternion([1.0, 0.0, 0.0, 0.0])
+
+				oldscale = o.scale.copy()
+				if not scene.janus_apply_scale:
+					o.scale = Vector([1, 1, 1])
+				
+				#bpy.ops.object.select_pattern(pattern=o.name, extend=False) # This apparently doesn't work on 2.78?
+				# Things to hardcode in the name of accident prevention:
+				# 1. Force export_scene.obj to use -Z Forward, Y Up, if it's currently using user defaults instead.
+				# 2. Figure out what's up with the COLLADA exporter (and force coordinate-related settings)
+				
+				if not o.data.name in exportedmeshes:
+					epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
+					if scene.janus_object_export==".obj":
+						with redirect_stdout(stdout):
+							bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY")
+					else:
+						with redirect_stdout(stdout):
+							bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
+							# TODO differentiate between per-object and per-mesh properties
+					ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
+					exportedmeshes.append(o.data.name)
+					assets(ob)
+
+				if not scene.janus_apply_rot:
+					o.rotation_mode = oldrotmode
+					o.rotation_axis_angle = oldrotax
+					o.rotation_euler = oldroteu
+					o.rotation_quaternion = oldrotquat
+
+				if not scene.janus_apply_scale:
+					o.scale = oldscale
+
+				attr = [("id", o.data.name), ("locked", b2s(o.janus_object_locked)), ("cull_face", o.janus_object_cullface), ("visible", str(o.janus_object_visible).lower()),("col",v2s(o.janus_object_color) if o.janus_object_color_active else "1 1 1"), ("lighting", b2s(o.janus_object_lighting)),("collision_id", o.data.name if o.janus_object_collision else ""), ("pos", p2s(loc))]
+
+				# The key is, *the model is already rotated, as far as I can tell, by the OBJ and Collada backends.*
+				# Hence, the model has to be un-rotated first. That's why the dance above exists.
+				if not scene.janus_apply_scale:
+					attr += [("scale", lp2s(o.scale))]
+				
+				if not scene.janus_apply_rot:
+					mtm(attr, rotmatrix)
+				
+				if o.janus_object_jsid:
+					attr += [("js_id",o.janus_object_jsid)]
+				
+					if o.janus_object_websurface and o.janus_object_websurface_url:
+						if not o.janus_object_websurface_url in exportedsurfaces:
+								assets(Tag("AssetWebSurface", attr=[("id", o.janus_object_websurface_url), ("src", o.janus_object_websurface_url), ("width", o.janus_object_websurface_size[0]), ("height", o.janus_object_websurface_size[1])]))
+								exportedsurfaces.append(o.janus_object_websurface_url)
+						attr += [("websurface_id", o.janus_object_websurface_url)]
+				
+				if o.janus_object_shader_active:
+					if o.janus_object_shader_frag != "":
+						fragname = os.path.basename(o.janus_object_shader_frag)
+					if o.janus_object_shader_vert != "":
+						vertname = os.path.basename(o.janus_object_shader_vert)
+					else:
+						vertname = ""
+					if fragname:
+						assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
+						if not assetshader in assets:
+								assets(assetshader)
+								shutil.copyfile(src=o.janus_object_shader_frag, dst=os.path.join(filepath, fragname))
+								if vertname != "":
+									shutil.copyfile(src=o.janus_object_shader_vert, dst=os.path.join(filepath, vertname))
+						attr += [("shader_id", fragname)]
+				
+				room(Tag("Object", single=False, attr=attr))
+				o.location = loc
+			elif o.janus_object_objtype == "JOT_LINK":
+				# Link is a separate object type now, allowing plane placeholders to allow some semblance of visual editing.
+				# portalaccounting deals with the fact Janus portals are centred at their bottom middle, not the centre like a plane placeholder
+				portalaccounting = (o.matrix_local * Vector([0.0, -(o.scale.x / 2.0), 0.0, 0.0])).xyz
+				attr = [("pos",p2s(o.location+portalaccounting)), ("scale",v2s(o.scale * 2.0)), ("url",o.janus_object_link_url), ("title",o.janus_object_link_name), ("col", v2s(o.color[:3]))]
+				ir(attr, o.matrix_local)
+				if o.janus_object_jsid:
+					attr += [("js_id",o.janus_object_jsid)]
+				if not o.janus_object_active:
+					attr += [("active","false")]
+				room(Tag("Link", attr=attr))
 		
 		elif o.type=="FONT":
 		
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
-				room(Tag("Link", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name), ("col", v2s(o.color[:3]))]))
+				# kept to make commit-splitting easier
+				room(Tag("Link", attr=[("pos",p2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name), ("col", v2s(o.color[:3]))]))
 			else:
-				text = Tag("Text", attr=[("pos",v2s(o.location)), ("scale","1.8 3.2 1"), ("title",o.name)])
+				texttype = "Text" if o.data.body.find("\n")==-1 else "Paragraph"
+				attr = [("pos",p2s(o.location)), ("scale","1.8 3.2 1"), ("title",o.name)]
+				#attr += [("fwd", r2s(o.matrix_local))] # in case of emergency. Note that r2s is the wrong way around. Good luck!
+				mt2(attr, o.matrix_local)
+				text = Tag(texttype, attr=attr)
 				text.sub.append(o.data.body)
 				room(text)
 
