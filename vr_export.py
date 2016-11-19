@@ -168,6 +168,7 @@ def write_html(scene, filepath, path_mode):
 	room = Tag("Room", attr)
 	
 	useractive = scene.objects.active
+	userselect = bpy.context.selected_objects[:]
 	
 	exportedmeshes = []
 	exportedsurfaces = []
@@ -326,6 +327,10 @@ def write_html(scene, filepath, path_mode):
 				sound = Tag("Sound", attr=[("id", name), ("js_id", o.janus_object_jsid), ("pos", p2s(o.location)), ("dist", f2s(o.janus_object_sound_dist)), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
 				room(sound)
 				
+	for so in bpy.context.selected_objects:
+		so.select = False
+	for so in userselect:
+		so.select = True
 	scene.objects.active = useractive
 	
 	fire(assets)
