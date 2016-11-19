@@ -36,34 +36,27 @@ def lp2s(v):
 def r2s(m):
 	return v2s(list(m*Vector([-1,0,0,0]))[:3])
 
-# insert rotation (used to give Object-style full rotation to anything that can take it)
-# moved here from the original code in the MESH handler
-# Since there's some special logic to deal with rotation now because of axis weirdness,
-# (I'm beginning to suspect the reason for the "Apply Rotation" hack is a lazy way out of this - suffice to say, I won't have it)
+# Insert rotation
+# Moved here from the original code in the MESH handler
 # Used for links based on placeholder planes.
-# Notably, I assume Euler X -90 YZ 0 is a standing link, facing to the +Y direction. I could well be insane for thinking that -Y (blender) is forwards.
+# Notably, I assume Euler X 90 YZ 0 is a standing link.
 def ir(attr, m):
 	rot = [" ".join([str(f) for f in list(v.xyz)]) for v in m.normalized()]
 	attr += [("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2]),]
 
-# If anyone complains about inefficiency, they can go write their version and run it through a test suite.
-# And test using Text objects, please. Lots of them, in MANY orientations.
-# *Then* talk to me (20kdc) about it.
+# Yes, it's probably inefficient, but I already tried messing around 
+#  with the function seen in ir, and it was painful.
+# This one's used for text.
 def mt2(attr, m):
 	attr += [("xdir", p2s(list(m*Vector([1,0,0,0]))[:3]))]
 	attr += [("ydir", p2s(list(m*Vector([0,1,0,0]))[:3]))]
 	attr += [("zdir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 
-# Here's one that works for models.
+# Here's one that's used for models.
 def mtm(attr, m):
 	attr += [("xdir", p2s(list(m*Vector([-1,0,0,0]))[:3]))]
 	attr += [("ydir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 	attr += [("zdir", p2s(list(m*Vector([0,-1,0,0]))[:3]))]
-
-# Possible swaps:
-# 0, 1: FAIL
-# 2, 1: FAIL
-# 0, 2: FAIL
 
 def write_html(scene, filepath, path_mode):
 
