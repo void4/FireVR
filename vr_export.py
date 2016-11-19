@@ -52,23 +52,19 @@ def r2sr(m):
 
 # Yes, it's probably inefficient, but I already tried messing around 
 #  with the function seen in ir, and it was painful.
-# This one's used for text.
+# This one's used for text and links.
 def mt2(attr, m):
+	m = m.normalized()
 	attr += [("xdir", p2s(list(m*Vector([1,0,0,0]))[:3]))]
 	attr += [("ydir", p2s(list(m*Vector([0,1,0,0]))[:3]))]
 	attr += [("zdir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 
 # Here's one that's used for models.
 def mtm(attr, m):
+	m = m.normalized()
 	attr += [("xdir", p2s(list(m*Vector([-1,0,0,0]))[:3]))]
 	attr += [("ydir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 	attr += [("zdir", p2s(list(m*Vector([0,-1,0,0]))[:3]))]
-
-# And links.
-def mtl(attr, m):
-	attr += [("xdir", p2s(list(m*Vector([1,0,0,0]))[:3]))]
-	attr += [("ydir", p2s(list(m*Vector([0,1,0,0]))[:3]))]
-	attr += [("zdir", p2s(list(m*Vector([0,0,1,0]))[:3]))]
 
 def write_html(scene, filepath, path_mode):
 
