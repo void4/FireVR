@@ -136,7 +136,7 @@ def write_html(scene, filepath, path_mode):
 			assetimage = Tag("AssetImage", attr=[("id",sky[1]), ("src",skyname)])
 			if not assetimage in assets:
 				assets(assetimage)
-				shutil.copyfile(src=sky[0], dst=os.path.join(filepath, skyname))	
+				shutil.copyfile(src=bpy.path.abspath(sky[0]), dst=os.path.join(filepath, skyname))	
 
 	if scene.janus_room_script_active:	
 		script_list = [scene.janus_room_script1,scene.janus_room_script2,scene.janus_room_script3,scene.janus_room_script4]
@@ -146,7 +146,7 @@ def write_html(scene, filepath, path_mode):
 				assetscript = Tag("AssetScript", attr=[("src",scriptname)])
 				if not assetscript in assets:
 					assets(assetscript)
-					shutil.copyfile(src=script_entry, dst=os.path.join(filepath, scriptname))
+					shutil.copyfile(src=bpy.path.abspath(script_entry), dst=os.path.join(filepath, scriptname))
 
 	if scene.janus_room_shader_active:		
 		if scene.janus_room_shader_frag != "":
@@ -161,9 +161,9 @@ def write_html(scene, filepath, path_mode):
 		if not assetshader in assets:
 			assets(assetshader)
 			if fragname:
-				shutil.copyfile(src=scene.janus_room_shader_frag, dst=os.path.join(filepath, fragname))
+				shutil.copyfile(src=bpy.path.abspath(scene.janus_room_shader_frag), dst=os.path.join(filepath, fragname))
 			if vertname:
-				shutil.copyfile(src=scene.janus_room_shader_vert, dst=os.path.join(filepath, vertname))						
+				shutil.copyfile(src=bpy.path.abspath(scene.janus_room_shader_vert), dst=os.path.join(filepath, vertname))						
 				
 	room = Tag("Room", attr)
 	
@@ -283,9 +283,9 @@ def write_html(scene, filepath, path_mode):
 						assetshader = Tag("AssetShader", attr=[("id",fragname),("src",fragname),("vertex_src",vertname)])
 						if not assetshader in assets:
 								assets(assetshader)
-								shutil.copyfile(src=o.janus_object_shader_frag, dst=os.path.join(filepath, fragname))
+								shutil.copyfile(src=bpy.path.abspath(o.janus_object_shader_frag), dst=os.path.join(filepath, fragname))
 								if vertname != "":
-									shutil.copyfile(src=o.janus_object_shader_vert, dst=os.path.join(filepath, vertname))
+									shutil.copyfile(src=bpy.path.abspath(o.janus_object_shader_vert), dst=os.path.join(filepath, vertname))
 						attr += [("shader_id", fragname)]
 				
 				room(Tag("Object", single=False, attr=attr))
@@ -323,7 +323,7 @@ def write_html(scene, filepath, path_mode):
 				assetsound = Tag("AssetSound", attr=[("id", name), ("src",name)])
 				if not assetsound in assets:
 					assets(assetsound)
-					shutil.copyfile(src=o.janus_object_sound, dst=os.path.join(filepath, name))
+					shutil.copyfile(src=bpy.path.abspath(o.janus_object_sound), dst=os.path.join(filepath, name))
 				sound = Tag("Sound", attr=[("id", name), ("js_id", o.janus_object_jsid), ("pos", p2s(o.location)), ("dist", f2s(o.janus_object_sound_dist)), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
 				room(sound)
 				
