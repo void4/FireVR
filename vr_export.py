@@ -36,6 +36,10 @@ def lp2s(v):
 def r2s(m):
 	return v2s(list(m*Vector([-1,0,0,0]))[:3])
 
+# rotation to string, room fwd edition
+def r2sr(m):
+	return v2s(list(m*Vector([0,0,-1,0]))[:3])
+
 # Insert rotation
 # Moved here from the original code in the MESH handler
 # Used for links based on placeholder planes.
@@ -88,7 +92,6 @@ def write_html(scene, filepath, path_mode):
 	assets = Tag("Assets")
 	
 	attr=[
-		("fwd","0 0 1"),
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
 		("run_speed", f2s(scene.janus_room_runspeed)),
@@ -117,7 +120,7 @@ def write_html(scene, filepath, path_mode):
 	if scene.camera:
 		attr += [
 		("pos", p2s(scene.camera.location)),
-		("fwd", r2s(scene.camera.matrix_local)),
+		("fwd", r2sr(scene.camera.matrix_local)),
 		]
 
 	if scene.janus_room!="None":
