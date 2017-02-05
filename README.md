@@ -1,5 +1,4 @@
 #Fire: JanusVR Exporter & IPFS Publisher
-#### by void
 
 ##Description
 
