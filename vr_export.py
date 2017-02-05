@@ -20,7 +20,7 @@ def f2s(f):
 # vector to string
 def v2s(v):
 	return " ".join("{0:.6f}".format(c) for c in v)
-	
+
 # position to string
 def p2s(v):
 	v = [v[0],v[2],-v[1]]
@@ -50,7 +50,7 @@ def r2sr(m):
 #	rot = [" ".join([str(f) for f in list(v.xyz)]) for v in m.normalized()]
 #	attr += [("xdir", rot[0]), ("ydir", rot[1]), ("zdir", rot[2]),]
 
-# Yes, it's probably inefficient, but I already tried messing around 
+# Yes, it's probably inefficient, but I already tried messing around
 #  with the function seen in ir, and it was painful.
 # This one's used for text and links.
 def mt2(attr, m):
@@ -69,7 +69,7 @@ def mtm(attr, m):
 def write_html(scene, filepath, path_mode):
 
 	stdout = io.StringIO()
-	
+
 	world = scene.world
 
 	doc = Tag("!DOCTYPE html", single=True)
@@ -83,10 +83,10 @@ def write_html(scene, filepath, path_mode):
 
 	body = Tag("body")
 	html(body)
-	
+
 	fire = Tag("FireBoxRoom")
 	assets = Tag("Assets")
-	
+
 	attr=[
 		("gravity", f2s(scene.janus_room_gravity)),
 		("walk_speed", f2s(scene.janus_room_walkspeed)),
@@ -106,13 +106,13 @@ def write_html(scene, filepath, path_mode):
 		("fog_col", v2s(scene.janus_room_fog_col)),
 		("locked", b2s(scene.janus_room_locked)),
 		]
-	
+
 	if scene.janus_server_default!=True:
 		attr += [
 		("server",scene.janus_server),
 		("port",scene.janus_server_port),
 		]
-	
+
 	if scene.camera:
 		attr += [
 		("pos", p2s(scene.camera.location)),
@@ -125,7 +125,7 @@ def write_html(scene, filepath, path_mode):
 		("visible",b2s(scene.janus_room_visible)),
 		("col",v2s(scene.janus_room_color)),
 		]
-		
+
 	if scene.janus_room_skybox_active:
 		attr += [
 		("skybox_left_id","sky_left"),
@@ -135,17 +135,17 @@ def write_html(scene, filepath, path_mode):
 		("skybox_up_id","sky_up"),
 		("skybox_down_id","sky_down"),
 		]
-		
+
 		sky_image = [(scene.janus_room_skybox_left,"sky_left"),(scene.janus_room_skybox_right,"sky_right"),(scene.janus_room_skybox_front,"sky_front"),(scene.janus_room_skybox_back,"sky_back"),(scene.janus_room_skybox_up,"sky_up"),(scene.janus_room_skybox_down,"sky_down")]
-		
+
 		for sky in sky_image:
 			skyname = os.path.basename(sky[0])
 			assetimage = Tag("AssetImage", attr=[("id",sky[1]), ("src",skyname)])
 			if not assetimage in assets:
 				assets(assetimage)
-				shutil.copyfile(src=bpy.path.abspath(sky[0]), dst=os.path.join(filepath, skyname))	
+				shutil.copyfile(src=bpy.path.abspath(sky[0]), dst=os.path.join(filepath, skyname))
 
-	if scene.janus_room_script_active:	
+	if scene.janus_room_script_active:
 		script_list = [scene.janus_room_script1,scene.janus_room_script2,scene.janus_room_script3,scene.janus_room_script4]
 		for script_entry in script_list:
 			if script_entry != "":
@@ -155,7 +155,7 @@ def write_html(scene, filepath, path_mode):
 					assets(assetscript)
 					shutil.copyfile(src=bpy.path.abspath(script_entry), dst=os.path.join(filepath, scriptname))
 
-	if scene.janus_room_shader_active:		
+	if scene.janus_room_shader_active:
 		if scene.janus_room_shader_frag != "":
 			fragname = os.path.basename(scene.janus_room_shader_frag)
 		if scene.janus_room_shader_vert != "":
@@ -170,13 +170,13 @@ def write_html(scene, filepath, path_mode):
 			if fragname:
 				shutil.copyfile(src=bpy.path.abspath(scene.janus_room_shader_frag), dst=os.path.join(filepath, fragname))
 			if vertname:
-				shutil.copyfile(src=bpy.path.abspath(scene.janus_room_shader_vert), dst=os.path.join(filepath, vertname))						
-				
+				shutil.copyfile(src=bpy.path.abspath(scene.janus_room_shader_vert), dst=os.path.join(filepath, vertname))
+
 	room = Tag("Room", attr)
-	
+
 	useractive = scene.objects.active
 	userselect = bpy.context.selected_objects[:]
-	
+
 	exportedmeshes = []
 	exportedsurfaces = []
 
@@ -184,7 +184,7 @@ def write_html(scene, filepath, path_mode):
 		bpy.ops.file.make_paths_relative()
 		bpy.ops.file.unpack_all(method='USE_LOCAL')
 		bpy.ops.file.make_paths_absolute()
-	
+
 	for o in bpy.data.objects:
 		if o.type=="MESH":
 			if o.janus_object_objtype == "JOT_OBJECT":
@@ -214,12 +214,12 @@ def write_html(scene, filepath, path_mode):
 						pass
 				loc = o.location.copy()
 				o.location = [0, 0, 0]
-				
+
 				oldrotmode = o.rotation_mode
 				oldrotquat = o.rotation_quaternion.copy()
 				oldroteu = o.rotation_euler.copy()
 				oldrotax = [x for x in o.rotation_axis_angle]
-				
+
 				# note: scale may or may not actually be reverted, depends on what testing finds. It's 1:27 AM, so please don't bug me about it.
 				# if NOT applying rotation/scale, then stop the exporters from doing annoying things like preserving rotation (which they do)
 				# if applying rotation/scale, then the exporters can do whatever, since it's all meant to be baked into the file
@@ -232,12 +232,12 @@ def write_html(scene, filepath, path_mode):
 				oldscale = o.scale.copy()
 				if not scene.janus_apply_scale:
 					o.scale = Vector([1, 1, 1])
-				
+
 				#bpy.ops.object.select_pattern(pattern=o.name, extend=False) # This apparently doesn't work on 2.78?
 				# Things to hardcode in the name of accident prevention:
 				# 1. Force export_scene.obj to use -Z Forward, Y Up, if it's currently using user defaults instead. [done]
 				# 2. Figure out what's up with the COLLADA exporter (and force coordinate-related settings)
-				
+
 				if not o.data.name in exportedmeshes:
 					epath = os.path.join(filepath, o.data.name+scene.janus_object_export)
 					if scene.janus_object_export==".obj":
@@ -245,7 +245,7 @@ def write_html(scene, filepath, path_mode):
 							bpy.ops.export_scene.obj(filepath=epath, use_selection=True, use_smooth_groups_bitflags=True, use_uvs=True, use_materials=True, use_mesh_modifiers=True,use_triangles=True, check_existing=False, use_normals=True, path_mode="COPY", axis_forward='-Z', axis_up='Y')
 					else:
 						with redirect_stdout(stdout):
-							bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False)
+							bpy.ops.wm.collada_export(filepath=epath, selected=True, check_existing=False, include_uv_textures=True, include_material_textures=True)
 							# TODO differentiate between per-object and per-mesh properties
 					ob = Tag("AssetObject", attr=[("id", o.data.name), ("src",o.data.name+scene.janus_object_export), ("mtl",o.data.name+".mtl")])
 					exportedmeshes.append(o.data.name)
@@ -266,19 +266,19 @@ def write_html(scene, filepath, path_mode):
 				# Hence, the model has to be un-rotated first. That's why the dance above exists.
 				if not scene.janus_apply_scale:
 					attr += [("scale", lp2s(o.scale))]
-				
+
 				if not scene.janus_apply_rot:
 					mtm(attr, rotmatrix)
-				
+
 				if o.janus_object_jsid:
 					attr += [("js_id",o.janus_object_jsid)]
-				
+
 					if o.janus_object_websurface and o.janus_object_websurface_url:
 						if not o.janus_object_websurface_url in exportedsurfaces:
 								assets(Tag("AssetWebSurface", attr=[("id", o.janus_object_websurface_url), ("src", o.janus_object_websurface_url), ("width", o.janus_object_websurface_size[0]), ("height", o.janus_object_websurface_size[1])]))
 								exportedsurfaces.append(o.janus_object_websurface_url)
 						attr += [("websurface_id", o.janus_object_websurface_url)]
-				
+
 				if o.janus_object_shader_active:
 					if o.janus_object_shader_frag != "":
 						fragname = os.path.basename(o.janus_object_shader_frag)
@@ -294,7 +294,7 @@ def write_html(scene, filepath, path_mode):
 								if vertname != "":
 									shutil.copyfile(src=bpy.path.abspath(o.janus_object_shader_vert), dst=os.path.join(filepath, vertname))
 						attr += [("shader_id", fragname)]
-				
+
 				room(Tag("Object", single=False, attr=attr))
 				o.location = loc
 			elif o.janus_object_objtype == "JOT_LINK":
@@ -307,7 +307,7 @@ def write_html(scene, filepath, path_mode):
 				# ideal input is 1.58, 1.77
 				# ideal output is 3.06, 3.35, 1 approx???
 				# note; actual ratios used are post-portal position adjustments.
-				# 
+				#
 				attr = [("pos",p2s(o.location+portalaccounting)), ("url",o.janus_object_link_url), ("title",o.janus_object_link_name), ("col", v2s(o.color[:3]))]
 				attr += [("scale",v2s(Vector([o.scale.x * 1.93, o.scale.y * 2.00, 1.0])))]
 				mt2(attr, o.matrix_local)
@@ -316,9 +316,9 @@ def write_html(scene, filepath, path_mode):
 				if not o.janus_object_active:
 					attr += [("active","false")]
 				room(Tag("Link", attr=attr))
-		
+
 		elif o.type=="FONT":
-		
+
 			if o.data.body.startswith("http://") or o.data.body.startswith("https://"):
 				# kept to make commit-splitting easier
 				room(Tag("Link", attr=[("pos",p2s(o.location)), ("scale","1.8 3.2 1"), ("url",o.data.body), ("title",o.name), ("col", v2s(o.color[:3]))]))
@@ -341,13 +341,13 @@ def write_html(scene, filepath, path_mode):
 					shutil.copyfile(src=bpy.path.abspath(o.janus_object_sound), dst=os.path.join(filepath, name))
 				sound = Tag("Sound", attr=[("id", name), ("js_id", o.janus_object_jsid), ("pos", p2s(o.location)), ("dist", f2s(o.janus_object_sound_dist)), ("rect", v2s(list(o.janus_object_sound_xy1)+list(o.janus_object_sound_xy2))), ("loop", b2s(o.janus_object_sound_loop)), ("play_once", b2s(o.janus_object_sound_once))])
 				room(sound)
-				
+
 	for so in bpy.context.selected_objects:
 		so.select = False
 	for so in userselect:
 		so.select = True
 	scene.objects.active = useractive
-	
+
 	fire(assets)
 	fire(room)
 	body(fire)
