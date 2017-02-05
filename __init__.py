@@ -377,7 +377,7 @@ class VRExportPath(Operator, ExportHelper):
 
 		return {"FINISHED"}
 
-class VRJanusPath(Operator, ExportHelper):
+class VRJanusPath(Operator, ExportHelper, AddonPreferences):
 	bl_idname = "set_path.janus"
 	bl_label = "JanusVR path"
 	bl_options = {"PRESET", "UNDO"}
