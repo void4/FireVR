@@ -54,7 +54,7 @@ class ToolPanel(Panel):
 	bl_label = "Firebox"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
 		self.layout.operator("fire.html", icon_value=custom_icons["custom_icon"].icon_id)
 		if context.scene.roomhash:
@@ -80,7 +80,7 @@ class ExportSettingsPanel(Panel):
 	bl_label = "Export Settings"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
 		self.layout.operator("export_path.html")
 		self.layout.prop(context.scene, "janus_ipfs")
@@ -103,7 +103,7 @@ class RunSettingsPanel(Panel):
 	bl_label = "Run Settings"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
 		self.layout.operator("set_path.janus")
 		self.layout.prop(context.scene, "janus_rendermode")
@@ -113,7 +113,7 @@ class RunSettingsPanel(Panel):
 			self.layout.label("Window size")
 			self.layout.prop(context.scene, "janus_size")
 
-Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront", "Wavefront object files"),(".dae", "Collada", "Collada files")))
+Scene.janus_object_export = EnumProperty(name="", default=".obj", items=((".obj", "Wavefront (.obj)", "Wavefront object files"),(".dae", "Collada (.dae)", "Collada files")))
 Object.janus_object_jsid = StringProperty(name="js_id", default="")
 Object.janus_object_objtype = EnumProperty(name="", default="JOT_OBJECT", items=(("JOT_NONE", "No Export", "Don't export this object."), ("JOT_OBJECT", "Object (model)", "<Object>"), ("JOT_LINK", "Link (portal)", "<Link>")))
 Object.janus_object_link_name = StringProperty(name="Link Name", default="")
@@ -144,9 +144,9 @@ class ObjectPanel(Panel):
 	bl_label = "Objects"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
-		
+
 		if context.object.type == "MESH":
 			self.layout.prop(context.object, "janus_object_objtype")
 			if context.object.janus_object_objtype != "JOT_NONE":
@@ -170,7 +170,7 @@ class ObjectPanel(Panel):
 
 				self.layout.label("Cull Face")
 				self.layout.prop(context.object, "janus_object_cullface")
-				
+
 				self.layout.prop(context.object, "janus_object_shader_active")
 				if context.object.janus_object_shader_active:
 					self.layout.prop(context.object, "janus_object_shader_frag")
@@ -182,7 +182,7 @@ class ObjectPanel(Panel):
 				self.layout.prop(context.object, "janus_object_link_name")
 				self.layout.prop(context.object, "janus_object_link_url")
 				self.layout.prop(context.object, "janus_object_active")
-		
+
 		elif context.object.type=="SPEAKER":
 			self.layout.prop(context.object, "janus_object_sound")
 			self.layout.prop(context.object, "janus_object_jsid")
@@ -194,7 +194,7 @@ class ObjectPanel(Panel):
 
 			self.layout.prop(context.object, "janus_object_sound_loop")
 			self.layout.prop(context.object, "janus_object_sound_once")
-		
+
 rooms = ["room_plane", "None", "room1", "room2", "room3", "room4", "room5", "room6", "room_1pedestal", "room_2pedestal", "room_3_narrow", "room_3_wide", "room_4_narrow", "room_4_wide", "room_box_small", "room_box_medium", "room1_new"]
 roomlist = tuple(tuple([room, room, room]) for room in rooms)
 Scene.janus_room = EnumProperty(name="", default="room_plane", items=roomlist)
@@ -244,15 +244,15 @@ class RoomPanel(Panel):
 	bl_label = "Room"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
 		self.layout.prop(context.scene, "janus_room")
-		
+
 		if context.scene.janus_room!="None":
 			self.layout.prop(context.scene, "janus_room_visible")
 			if context.scene.janus_room_visible:
 				self.layout.prop(context.scene, "janus_room_color")
-				
+
 		self.layout.prop(context.scene, "janus_room_skybox_active")
 		if context.scene.janus_room_skybox_active:
 			self.layout.prop(context.scene, "janus_room_skybox_left")
@@ -260,8 +260,8 @@ class RoomPanel(Panel):
 			self.layout.prop(context.scene, "janus_room_skybox_front")
 			self.layout.prop(context.scene, "janus_room_skybox_back")
 			self.layout.prop(context.scene, "janus_room_skybox_up")
-			self.layout.prop(context.scene, "janus_room_skybox_down")		
-			
+			self.layout.prop(context.scene, "janus_room_skybox_down")
+
 		self.layout.prop(context.scene, "janus_room_gravity")
 		self.layout.prop(context.scene, "janus_room_walkspeed")
 		self.layout.prop(context.scene, "janus_room_runspeed")
@@ -295,15 +295,15 @@ class RoomPanel(Panel):
 					self.layout.prop(context.scene, "janus_room_script3")
 					if context.scene.janus_room_script3:
 						self.layout.prop(context.scene, "janus_room_script4")
-						
+
 		self.layout.prop(context.scene, "janus_room_shader_active")
 		if context.scene.janus_room_shader_active:
 			self.layout.prop(context.scene, "janus_room_shader_frag")
 			self.layout.prop(context.scene, "janus_room_shader_vert")
-						
+
 		self.layout.prop(context.scene, "janus_room_locked")
 
-Scene.janus_server_default = BoolProperty(name="Default Server", default=True)		
+Scene.janus_server_default = BoolProperty(name="Default Server", default=True)
 Scene.janus_server = StringProperty(name="", default="babylon.vrsites.com")
 Scene.janus_server_port = IntProperty(name="Port", default=5567, min=0, max=2**16-1)
 
@@ -311,7 +311,7 @@ class ServerPanel(Panel):
 	bl_label = "Multiplayer"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "TOOLS"
-	
+
 	def draw(self, context):
 		self.layout.prop(context.scene, "janus_server_default")
 		if not context.scene.janus_server_default:
@@ -330,11 +330,11 @@ class DebugPanel(Panel):
 
 class ipfsvr(AddonPreferences):
 	bl_idname = __package__
-		
+
 	from os.path import expanduser
 	home = expanduser("~")
 	filename_ext = ""
-	
+
 	exportpath = StringProperty(name="", subtype="FILE_PATH", default="")
 	januspath = StringProperty(name="januspath", subtype="FILE_PATH", default=os.path.join(home,"JanusVRBin/janusvr"))
 
@@ -359,11 +359,11 @@ class VRExportPath(Operator, ExportHelper):
 	bl_idname = "export_path.html"
 	bl_label = "Export path"
 	bl_options = {"PRESET", "UNDO"}
-	
+
 	use_filter_folder = True
 	filename_ext = ""
 	filter_glob = ""
-	
+
 	def execute(self, context):
 		keywords = self.as_keywords(ignore=("filter_glob","check_existing"))
 
@@ -374,7 +374,7 @@ class VRExportPath(Operator, ExportHelper):
 			setv(context,"exportpath",os.path.dirname(keywords["filepath"]))
 		else:
 			self.report({"ERROR"}, "Please select a directory, not a file")
-			
+
 		return {"FINISHED"}
 
 class VRJanusPath(Operator, ExportHelper):
@@ -395,7 +395,7 @@ class VRJanusPath(Operator, ExportHelper):
         default="janusvr.exe",
         options={'HIDDEN'},
         )
-	
+
 	def execute(self, context):
 		keywords = self.as_keywords(ignore=("filter_glob","check_existing"))
 
@@ -406,14 +406,14 @@ class VRJanusPath(Operator, ExportHelper):
 			setv(context,"januspath", keywords["filepath"])
 		else:
 			self.report({"ERROR"}, "Please select the JanusVR executable")
-			
+
 		return {"FINISHED"}
 
 class VRExport(Operator):
 	bl_idname = "export_scene.html"
 	bl_label = "Export FireBoxHTML"
 	bl_options = {"PRESET", "UNDO"}
-	
+
 	def execute(self, context):
 		exportpath = getv(context, "exportpath")
 		if exportpath:
@@ -436,30 +436,30 @@ class VRJanus(Operator):
 	bl_idname = "export_scene.vrjanus"
 	bl_label = "Start JanusVR"
 	bl_options = {"PRESET", "UNDO"}
-	
+
 	def execute(self, context):
-	
+
 		filepath = hasv(context, "filepath")
 
 		if not filepath:
 			self.report({"ERROR"}, "Did not export scene.")
-			return {"FINISHED"}			
-	
+			return {"FINISHED"}
+
 		if context.scene.janus_ipfs:
 			ipfs.start()
-		
+
 			hashes = ipfs.addRecursive(filepath)
-	
+
 			if not hashes:
 				self.report({"ERROR"}, "IPFS Error")
 				return {"FINISHED"}
-			
+
 			gateway = getURL(context, hashes)
-		
+
 			context.scene.roomhash = gateway
-			
+
 			self.report({"INFO"}, "Starting JanusVR on %s" % gateway)
-		
+
 		args = []
 		if not context.scene.janus_fullscreen:
 			args.append("-window")
@@ -467,13 +467,13 @@ class VRJanus(Operator):
 			args.append(str(context.scene.janus_size[0]))
 			args.append("-height")
 			args.append(str(context.scene.janus_size[1]))
-			
+
 		args += ["render", context.scene.janus_rendermode]
 		args += ["rate", str(context.scene.janus_updaterate)]
-		
+
 		if not context.scene.janus_ipfs:
 			filepath = os.path.join(filepath, "index.html")
-			
+
 		januspath = hasv(context, "januspath")
 		if januspath:
 			params = {}
@@ -486,12 +486,12 @@ class VRJanus(Operator):
 		else:
 			self.report({"ERROR"}, "JanusVR path not set")
 		return {"FINISHED"}
-		
+
 class VRFire(Operator):
 	bl_idname = "fire.html"
 	bl_label = "Start JanusVR"
 	bl_options = {"PRESET", "UNDO"}
-	
+
 	def execute(self, context):
 		bpy.ops.export_scene.html()
 		bpy.ops.export_scene.vrjanus()
@@ -506,7 +506,7 @@ def register():
 	icon_path = os.path.join(os.path.dirname(script_path), "icon.png")
 	custom_icons.load("custom_icon", icon_path, "IMAGE")
 	bpy.utils.register_module(__name__)
-	
+
 def unregister():
 	global custom_icons
 	bpy.utils.previews.remove(custom_icons)
