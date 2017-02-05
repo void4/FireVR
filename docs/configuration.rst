@@ -12,3 +12,5 @@ Now, two last things are necessary:
 2. Set the JanusVR path in the Run settings (select the Janus executable)
 
 To test if the settings are correct, click "Start JanusVR" - you should now see the default cube floating in space.
+
+To make the configuration permanent, save the user settings again.
