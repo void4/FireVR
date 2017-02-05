@@ -32,22 +32,16 @@ class Tag:
 			if self.tag=="Object":
 				w(" ")
 			w(">")
-			
-		if nice and len(self.sub)>0:
-			w("\n")
-
+		# self.sub must not be indented, as Text objects are sensitive to this under some conditions (tried on JanusVR 54.1 under Wine 1.9.23) and will result in bells.
+		# Maybe that's a bug in JanusVR, maybe that's a bug in Wine, maybe that's a bug here, in any case, this works around it.
 		for s in self.sub:
 			if isinstance(s, str):
-				if nice:
-					w(indent*(level+1))
 				w(s)
-				if nice:
-					w("\n")
 			else:
 				#if loop<n: prevent recursion
 				s.write(w, nice, level+(0 if self.single else 1), indent, loop+1)
 				
-		if nice and not self.single:
+		if len(self.sub)==0 and nice and not self.single:
 			w(indent*(level))
 		if not len(self.sub)==0 and not self.single:
 			w("</%s>" % self.tag)

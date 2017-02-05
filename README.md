@@ -54,16 +54,38 @@ This addon was tested under Ubuntu/Linux and Windows. Your feedback is welcome!
 - **Display Mode** Select 2D, Rift, SBS, SBSR mode
 - **Rate** Server update rate
 - **JanusVR FullScreen** Starts JanusVR in fullscreen mode
-- **Winow Size** Launch JanusVR with the specified window dimensions
+- **Window Size** Launch JanusVR with the specified window dimensions
 
 ###Objects
 
 __*These attributes are all set on a per object basis__
 
-_**Mesh Objects**_
+_**Mesh Objects/Common**_
+
+- **Object Type** For the most part, should be "Object (model)". However, it can be used to allow making placeholder objects with meshes.
+- **js\_id** Specify js\_id for object here, blank will give a default numeric id
+
+_**Mesh Objects/Link**_
+
+When making one of these, start off with a newly created Plane.
+
+Don't go into edit mode to resize it - just use the transform
+ (the exporter won't pick up on mesh resizing, the plane itself is just a placeholder)
+
+With this, you should be able to semi-accurately place portals.
+
+To check the orientation:
+Local Y should be up, Z should be facing outwards.
+
+I'm not quite sure it works completely accurately, and if not what's responsible, but it's a start.
+
+- **Link Name** The name displayed on the portal.
+- **Link URL** Since (unlike the old "text as portal" system) link objects don't directly hold text, the URL is put here.
+- **Active** If false, ``active="false"`` is set.
+
+_**Mesh Objects/Mesh**_
 
 - **Export Format** Select Wavefront (.obj) or Collada (.dae) export format
-- **js_id** Specify js_id for object here, blank will give a default numeric id
 - **Collision** Enable collision for this object
 - **Locked** Lock this object
 - **Visible** Draw this item in the Janus room (setting to false with collision set to true is useful for proxy collision geometry)
@@ -78,13 +100,22 @@ _**Mesh Objects**_
   - **Vertex Shader** Set path to Vertex Shader (use absolute paths)
 
 _**Sound Objects (use speaker in Blender)**_
+
 - **Sound** Set path to sound file (use absolute paths)
-- **js id** js_id for sound object
+- **js\_id** js\_id for sound object
 - **Distance** Distance at which sound plays at full volume
 - **XY1** X and Z positions for first corner of trigger rectangle
 - **XY2** X and Z positions for second corner of trigger rectangle
 - **Loop** loop sound
 - **Place once** play the sound only the first time triggered per user session
+
+_**Text Objects**_
+
+Text objects don't have any properties as such, but there are the following things to note:
+
+1. Text is created for single-line, Paragraph for multi-line.
+2. It seems JanusVR ignores the lines anyway, so this is fine.
+3. The old "beginning with http creates link" behavior still exists - not exactly sublime.
 
 ###Room
 
@@ -136,6 +167,9 @@ Use Apply Rotation under export options
 
 ###The objects are scaleded incorrectly
 Use Apply Scale under export options
+
+###I used it and it messed with all my rotations and scales
+Turn off Apply Rotation and Apply Scale under export options
 
 ###Getting errors about file paths
 Always use absolute paths, either disable "use relative paths" under user preferences or unclick the relative path checkbox when selecting your file.
