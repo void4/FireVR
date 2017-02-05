@@ -2,6 +2,10 @@
 FAQ
 ===
 
+The texture doesn't load
+"""""""""""""""""""""""""
+Consider using the Wavefront .obj format for now.
+Currently, only textures with the Source: Single Image is supported.
 
 The objects are loading slowly
 """"""""""""""""""""""""""""""""
