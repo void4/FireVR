@@ -19,6 +19,12 @@ import os
 import time
 import subprocess
 
+import sys
+
+_modules_path = os.path.join(os.path.dirname(__file__), "modules")
+if not _modules_path in sys.path:
+    sys.path.append(_modules_path)
+
 from bpy.types import (
 	Operator,
 	Panel,
@@ -46,7 +52,7 @@ import bpy
 
 import bpy.utils.previews
 
-from . import vr_export
+from . import vr_export, vr_import
 
 Scene.roomhash = StringProperty(name="", default="")
 
@@ -93,6 +99,18 @@ class ExportSettingsPanel(Panel):
 		self.layout.prop(context.scene, "janus_apply_scale")
 		self.layout.prop(context.scene, "janus_apply_pos")
 		self.layout.prop(context.scene, "janus_unpack")
+
+Scene.janus_importpath = StringProperty(name="importpath", description="Specify the html page that includes the FireBoxHTML source", subtype="FILE_PATH", default="")
+
+class ImportSettingsPanel(Panel):
+	bl_label = "Import Settings"
+	bl_space_type = "VIEW_3D"
+	bl_region_type = "TOOLS"
+
+	def draw(self, context):
+		self.layout.operator("import_scene.html")
+		col = self.layout.column()
+		col.prop(context.scene, "janus_importpath")
 
 Scene.janus_rendermode = EnumProperty(name="", default="2d", items=(("2d", "2D", "2D"),("sbs","Side by Side", "Side by Side"),("sbs_reverse", "Side by Side Reverse", "Side by Side Reverse"),("rift", "Rift", "Rift")))
 Scene.janus_fullscreen = BoolProperty(name="JanusVR Fullscreen", default=True)
@@ -407,6 +425,20 @@ class VRJanusPath(Operator, ExportHelper, AddonPreferences):
 		else:
 			self.report({"ERROR"}, "Please select the JanusVR executable")
 
+		return {"FINISHED"}
+
+class VRImport(Operator):
+	bl_idname = "import_scene.html"
+	bl_label = "Import FireBoxHTML"
+	bl_options = {"PRESET", "UNDO"}
+
+	def execute(self, context):
+		importpath = context.scene.janus_importpath
+		if importpath:
+			vr_import.load(self, context, filepath=importpath)
+			self.report({"INFO"}, "Imported from %s" % importpath)
+		else:
+			self.report({"ERROR"}, "Invalid import path")
 		return {"FINISHED"}
 
 class VRExport(Operator):

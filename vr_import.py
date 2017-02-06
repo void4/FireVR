@@ -1,7 +1,7 @@
 # Import JanusVR from URL/filesystem+
 # TODO include dependencies directly in addon
-from bs4 import BeautifulSoup
-import urllib
+import bs4
+import urllib.request as urlreq
 
 def s2v(s):
     return [float(c) for c in s.split(" ")]
@@ -14,16 +14,34 @@ def s2lp(s):
     v = s2v(s)
     return [v[0], v[2], v[1]]
 
-def read_html(scene, filepath, path_mode):
-    source = urllib.urlopen(filepath)
+
+def read_html(operator, scene, filepath, path_mode):
+    #FEATURE import from ipfs
+    if filepath.startswith("http://") or filepath.startswith("https://"):
+        #print("WHAT THE FUCK", str(filepath.startswith("http://")),str(filepath.startswith("https://")))
+        pass
+    else:
+        filepath = "file://" + filepath
+    source = urlreq.urlopen(filepath)
     html = source.read()
-
-    soup = BeautifulSoup(html)
-
+    soup = bs4.BeautifulSoup(html, "html.parser")
     # Case sensitive!
-    room = soup.find_one("fireboxroom")
-    assets = room.find_one("assets")
+    fireboxrooms = soup.findAll("fireboxroom")
 
+    if fireboxrooms is None:
+        operator.report({"ERROR"}, "Could not find the FireBoxRoom tag")
+        return
+
+    fireboxroom = fireboxrooms[0]
+
+    rooms = fireboxroom.findAll("room")
+    if rooms is None:
+        operator.report({"ERROR"}, "Could not find the Room tag")
+        return
+
+    room = rooms[0]
+
+    # Reset all changes in case of later error?
     # Prevent having to specify defaults twice? (on external load and addon startup)
     scene.janus_room_gravity = float(room.attrs.get("gravity", 9.8))
     scene.janus_room_walkspeed = float(room.attrs.get("walk_speed", 1.8))
@@ -42,6 +60,8 @@ def read_html(scene, filepath, path_mode):
     scene.janus_room_fog_col = s2v(room.attrs.get("fog_col", 500))
     scene.janus_room_locked = bool(room.attrs.get("locked", False))
 
+    assets = room.findAll("assets")
+
 
 def load(operator, context, filepath, path_mode="AUTO", relpath=""):
-    read_html(context.scene, filepath, path_mode)
+    read_html(operator, context.scene, filepath, path_mode)
