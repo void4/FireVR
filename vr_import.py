@@ -1,5 +1,4 @@
-# Import JanusVR from URL/filesystem+
-# TODO include dependencies directly in addon
+# Import JanusVR from URL/filesystem
 import bs4
 import urllib.request as urlreq
 
@@ -16,16 +15,16 @@ def s2lp(s):
 
 
 def read_html(operator, scene, filepath, path_mode):
-    #FEATURE import from ipfs
+    #FEATURE import from ipfs://
     if filepath.startswith("http://") or filepath.startswith("https://"):
-        #print("WHAT THE FUCK", str(filepath.startswith("http://")),str(filepath.startswith("https://")))
         pass
     else:
         filepath = "file://" + filepath
+
     source = urlreq.urlopen(filepath)
     html = source.read()
     soup = bs4.BeautifulSoup(html, "html.parser")
-    # Case sensitive!
+
     fireboxrooms = soup.findAll("fireboxroom")
 
     if fireboxrooms is None:
@@ -41,7 +40,7 @@ def read_html(operator, scene, filepath, path_mode):
 
     room = rooms[0]
 
-    # Reset all changes in case of later error?
+    # Reset all changes in case of later error? Undo operator?
     # Prevent having to specify defaults twice? (on external load and addon startup)
     scene.janus_room_gravity = float(room.attrs.get("gravity", 9.8))
     scene.janus_room_walkspeed = float(room.attrs.get("walk_speed", 1.8))
