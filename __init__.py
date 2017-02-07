@@ -365,7 +365,10 @@ def setv(context, name, value):
 	context.user_preferences.addons[__name__].preferences[name] = value
 
 def getv(context, name):
-	return context.user_preferences.addons[__name__].preferences[name]
+	try:
+		return context.user_preferences.addons[__name__].preferences[name]
+	except KeyError:
+		return None
 
 def hasv(context, name):
 	try:
@@ -433,12 +436,19 @@ class VRImport(Operator):
 	bl_options = {"PRESET", "UNDO"}
 
 	def execute(self, context):
-		importpath = context.scene.janus_importpath
-		if importpath:
-			vr_import.load(self, context, filepath=importpath)
-			self.report({"INFO"}, "Imported from %s" % importpath)
+		#use exportpath/tmp as working path
+		exportpath = getv(context, "exportpath")
+		if exportpath:
+			workingpath = os.path.join(exportpath, "tmp")#time.strftime("%Y%m%d%H%M%S"))
+			os.makedirs(workingpath, exist_ok=True)
+			importpath = context.scene.janus_importpath
+			if importpath:
+				vr_import.load(self, context, filepath=importpath, workingpath=workingpath)
+				self.report({"INFO"}, "Imported from %s" % importpath)
+			else:
+				self.report({"ERROR"}, "Invalid import path")
 		else:
-			self.report({"ERROR"}, "Invalid import path")
+			self.report({"ERROR"}, "Invalid export (working) path")
 		return {"FINISHED"}
 
 class VRExport(Operator):
@@ -538,6 +548,8 @@ def register():
 	icon_path = os.path.join(os.path.dirname(script_path), "icon.png")
 	custom_icons.load("custom_icon", icon_path, "IMAGE")
 	bpy.utils.register_module(__name__)
+	if getv(bpy.context, "exportpath") is None:
+		setv(bpy.context, "exportpath", "jvr")
 
 def unregister():
 	global custom_icons

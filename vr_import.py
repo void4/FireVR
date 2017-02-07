@@ -1,6 +1,8 @@
 # Import JanusVR from URL/filesystem
-import bs4
+import os
 import urllib.request as urlreq
+import bpy
+import bs4
 
 def s2v(s):
     return [float(c) for c in s.split(" ")]
@@ -14,11 +16,15 @@ def s2lp(s):
     return [v[0], v[2], v[1]]
 
 
-def read_html(operator, scene, filepath, path_mode):
+def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
     if filepath.startswith("http://") or filepath.startswith("https://"):
-        pass
+        splitindex = filepath.rfind("/")
+        basepath = filepath[:splitindex+1]
+        basename = filepath[splitindex+1:]
     else:
+        basepath = "file://" + os.path.dirname(filepath)
+        basename = os.path.basename(filepath)
         filepath = "file://" + filepath
 
     source = urlreq.urlopen(filepath)
@@ -56,11 +62,44 @@ def read_html(operator, scene, filepath, path_mode):
     scene.janus_room_fog_density = float(room.attrs.get("fog_density", 500))
     scene.janus_room_fog_start = float(room.attrs.get("fog_start", 500))
     scene.janus_room_fog_end = float(room.attrs.get("fog_end", 500))
-    scene.janus_room_fog_col = s2v(room.attrs.get("fog_col", 500))
+    scene.janus_room_fog_col = s2v(room.attrs.get("fog_col", "100 100 100"))
     scene.janus_room_locked = bool(room.attrs.get("locked", False))
 
-    assets = room.findAll("assets")
+    jassets = {}
 
+    assets = fireboxroom.findAll("assets")
+    if assets is None:
+        operator.report({"INFO"}, "No assets found")
+        return
 
-def load(operator, context, filepath, path_mode="AUTO", relpath=""):
-    read_html(operator, context.scene, filepath, path_mode)
+    #reuse and rename exportpath as working directory?
+    for asset in assets[0].findAll("assetobject"):
+        #make and object class, then obj.import()?
+        #dae might be different!
+        #assets with same basename will conflict (e.g. from different domains)
+
+        if not asset["src"].endswith(".obj"):
+            continue
+
+        print(asset)
+        jassets[asset["id"]] = [asset["src"], asset.attrs.get("mtl", None)]
+        fobj = open(os.path.join(workingpath, os.path.basename(asset["src"])), "wb")
+        fobj.write(urlreq.urlopen(os.path.join(basepath, asset["src"]) if not "/" in asset["src"] else asset["src"]).read())
+        fobj.close()
+        if asset.attrs.get("mtl", None):
+            fmtl = open(os.path.join(workingpath, os.path.basename(asset["mtl"])), "wb")
+            fmtl.write(urlreq.urlopen(os.path.join(basepath, asset["mtl"]) if not "/" in asset["mtl"] else asset["mtl"]).read())
+            fmtl.close()
+
+    objects = room.findAll("object")
+    if objects is None:
+        operator.report({"INFO"}, "No objects found")
+        return
+
+    for obj in objects:
+        srcfile = jassets[obj["id"]][0]
+        if srcfile.endswith(".obj"):
+            bpy.ops.import_scene.obj(filepath=os.path.join(workingpath, srcfile if not "/" in srcfile else os.path.basename(srcfile)))
+
+def load(operator, context, filepath, path_mode="AUTO", relpath="", workingpath="FireVR/tmp"):
+    read_html(operator, context.scene, filepath, path_mode, workingpath)
