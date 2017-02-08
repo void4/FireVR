@@ -1,6 +1,7 @@
 # Import JanusVR from URL/filesystem
 import os
 import urllib.request as urlreq
+import gzip
 import bpy
 import bs4
 
@@ -15,6 +16,72 @@ def s2lp(s):
     v = s2v(s)
     return [v[0], v[2], v[1]]
 
+class AssetObjectObj:
+
+    def __init__(self, basepath, workingpath, tag):
+        self.basepath = basepath
+        self.workingpath = workingpath
+        self.id = tag["id"]
+        self.src = tag["src"]
+        self.mtl = tag.attrs.get("mtl", None)
+        self.loaded = False
+        self.imported = False
+        self.objects = []
+
+    def abs_source(self, path):
+        if "/" in path:
+            return path
+
+        return os.path.join(self.basepath, path)
+
+    def abs_target(self, path):
+        return os.path.join(self.workingpath, os.path.basename(path))
+
+    # Moves resources to the working directory
+    def retrieve(self, path):
+        target = self.abs_target(path)
+        urlreq.urlretrieve(self.abs_source(path), target)
+        if path.endswith(".gz"):
+            with gzip.open(target, 'rb') as infile:
+                with open(target[:-3], 'wb') as outfile:
+                    outfile.write(infile.read())
+
+            return path[:-3]
+        return path
+
+    def load(self):
+
+        if self.loaded:
+            return
+
+        self.src = self.retrieve(self.src)
+        if self.mtl:
+            self.mtl = self.retrieve(self.mtl)
+
+        self.loaded = True
+
+    #An .obj can include multiple objects!
+    def instantiate(self, tag):
+        print(tag)
+        self.load()
+        if not self.imported:
+            objects = list(bpy.data.objects)
+            bpy.ops.import_scene.obj(filepath=os.path.join(self.workingpath, os.path.basename(self.src)))
+            self.objects = [o for o in list(bpy.data.objects) if o not in objects]
+            #obj = bpy.context.selected_objects[0]
+            #obj.name = self.id
+        else:
+            newobj = []
+            for obj in self.objects:
+                bpy.ops.object.select_pattern(pattern=obj.name)
+                bpy.ops.object.duplicate(linked=True)
+                newobj.append(bpy.context.selected_objects[0])
+            self.objects = newobj
+
+        print(self.objects)
+        for obj in self.objects:
+            obj.location = s2v(tag.attrs.get("pos", "0 0 0"))
+            obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
 
 def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
@@ -72,24 +139,15 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
         operator.report({"INFO"}, "No assets found")
         return
 
-    #reuse and rename exportpath as working directory?
     for asset in assets[0].findAll("assetobject"):
-        #make and object class, then obj.import()?
         #dae might be different!
         #assets with same basename will conflict (e.g. from different domains)
-
-        if not asset["src"].endswith(".obj"):
-            continue
-
         print(asset)
-        jassets[asset["id"]] = [asset["src"], asset.attrs.get("mtl", None)]
-        fobj = open(os.path.join(workingpath, os.path.basename(asset["src"])), "wb")
-        fobj.write(urlreq.urlopen(os.path.join(basepath, asset["src"]) if not "/" in asset["src"] else asset["src"]).read())
-        fobj.close()
-        if asset.attrs.get("mtl", None):
-            fmtl = open(os.path.join(workingpath, os.path.basename(asset["mtl"])), "wb")
-            fmtl.write(urlreq.urlopen(os.path.join(basepath, asset["mtl"]) if not "/" in asset["mtl"] else asset["mtl"]).read())
-            fmtl.close()
+
+        if asset["src"].endswith(".obj") or asset["src"].endswith(".obj.gz"):
+            jassets[asset["id"]] = AssetObjectObj(basepath, workingpath, asset)
+        else:
+            continue
 
     objects = room.findAll("object")
     if objects is None:
@@ -97,9 +155,10 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
         return
 
     for obj in objects:
-        srcfile = jassets[obj["id"]][0]
-        if srcfile.endswith(".obj"):
-            bpy.ops.import_scene.obj(filepath=os.path.join(workingpath, srcfile if not "/" in srcfile else os.path.basename(srcfile)))
+        asset = jassets.get(obj["id"])
+        if asset:
+            asset.instantiate(obj)
+
 
 def load(operator, context, filepath, path_mode="AUTO", relpath="", workingpath="FireVR/tmp"):
     read_html(operator, context.scene, filepath, path_mode, workingpath)

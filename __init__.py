@@ -100,7 +100,7 @@ class ExportSettingsPanel(Panel):
 		self.layout.prop(context.scene, "janus_apply_pos")
 		self.layout.prop(context.scene, "janus_unpack")
 
-Scene.janus_importpath = StringProperty(name="importpath", description="Specify the html page that includes the FireBoxHTML source", subtype="FILE_PATH", default="")
+Scene.janus_importpath = StringProperty(name="importpath", description="Specify the html page that includes the FireBoxHTML source", subtype="FILE_PATH", default="http://vesta.janusvr.com/kityandtom/freedome")
 
 class ImportSettingsPanel(Panel):
 	bl_label = "Import Settings"
