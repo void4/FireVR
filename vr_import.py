@@ -3,6 +3,8 @@ import os
 import urllib.request as urlreq
 import gzip
 import bpy
+from mathutils import Vector, Matrix
+from math import radians
 import bs4
 
 def s2v(s):
@@ -15,6 +17,15 @@ def s2p(s):
 def s2lp(s):
     v = s2v(s)
     return [v[0], v[2], v[1]]
+
+def fromFwd(zdir):
+    ydir = [0,1,0]
+    xdir = Vector(zdir).cross(Vector(ydir))
+    mtrx = Matrix([xdir, zdir, ydir])
+    return mtrx
+
+def neg(v):
+    return [-e for e in v]
 
 class AssetObjectObj:
 
@@ -66,7 +77,7 @@ class AssetObjectObj:
         self.load()
         if not self.imported:
             objects = list(bpy.data.objects)
-            bpy.ops.import_scene.obj(filepath=os.path.join(self.workingpath, os.path.basename(self.src)))
+            bpy.ops.import_scene.obj(filepath=os.path.join(self.workingpath, os.path.basename(self.src)), axis_up="Y", axis_forward="Z")
             self.objects = [o for o in list(bpy.data.objects) if o not in objects]
             #obj = bpy.context.selected_objects[0]
             #obj.name = self.id
@@ -80,8 +91,15 @@ class AssetObjectObj:
 
         print(self.objects)
         for obj in self.objects:
-            obj.location = s2v(tag.attrs.get("pos", "0 0 0"))
             obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
+
+            if "xdir" in tag.attrs and "ydir" in tag.attrs and "zdir" in tag.attrs:
+                #Matrix.Rotation(radians(-90.0), 3, 'Y')*
+                obj.rotation_euler = (Matrix([s2v(tag["xdir"]), neg(s2v(tag["zdir"])), s2v(tag["ydir"])])).to_euler()
+            else:
+                obj.rotation_euler = fromFwd(s2v(tag.attrs.get("fwd", "0 0 1"))).to_euler()
+
+            obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
 
 def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
