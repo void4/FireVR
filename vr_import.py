@@ -5,6 +5,7 @@ import gzip
 import bpy
 from mathutils import Vector, Matrix
 from math import radians
+import re
 import bs4
 
 def s2v(s):
@@ -34,6 +35,8 @@ class AssetObjectObj:
         self.workingpath = workingpath
         self.id = tag["id"]
         self.src = tag["src"]
+        self.sourcepath = os.path.dirname(self.src)
+        print("BASEPATH: %s\nSOURCEPATH: %s" % (self.basepath, self.sourcepath))
         self.mtl = tag.attrs.get("mtl", None)
         self.loaded = False
         self.imported = False
@@ -43,7 +46,7 @@ class AssetObjectObj:
         if "/" in path:
             return path
 
-        return os.path.join(self.basepath, path)
+        return os.path.join(self.sourcepath, path)
 
     def abs_target(self, path):
         return os.path.join(self.workingpath, os.path.basename(path))
@@ -57,8 +60,8 @@ class AssetObjectObj:
                 with open(target[:-3], 'wb') as outfile:
                     outfile.write(infile.read())
 
-            return path[:-3]
-        return path
+            return target[:-3]
+        return target
 
     def load(self):
 
@@ -68,6 +71,12 @@ class AssetObjectObj:
         self.src = self.retrieve(self.src)
         if self.mtl:
             self.mtl = self.retrieve(self.mtl)
+            imgfiles = []
+            with open(self.mtl, "r") as mtlfile:
+                imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
+
+            for imgfile in imgfiles:
+                self.retrieve(imgfile)
 
         self.loaded = True
 
@@ -77,7 +86,7 @@ class AssetObjectObj:
         self.load()
         if not self.imported:
             objects = list(bpy.data.objects)
-            bpy.ops.import_scene.obj(filepath=os.path.join(self.workingpath, os.path.basename(self.src)), axis_up="Y", axis_forward="Z")
+            bpy.ops.import_scene.obj(filepath=self.src, axis_up="Y", axis_forward="Z")
             self.objects = [o for o in list(bpy.data.objects) if o not in objects]
             #obj = bpy.context.selected_objects[0]
             #obj.name = self.id
