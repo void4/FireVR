@@ -28,6 +28,13 @@ def fromFwd(zdir):
 def neg(v):
     return [-e for e in v]
 
+def rel2abs(base, path):
+    if path.startswith("../"):
+        parentdir = base[:-2 if base.endswith("/") else -1].rsplit("/", 1)[0]
+        return os.path.join(parentdir, path[3:])
+
+    return path
+
 class AssetObjectObj:
 
     def __init__(self, basepath, workingpath, tag):
@@ -36,25 +43,31 @@ class AssetObjectObj:
         self.id = tag["id"]
         self.src = tag["src"]
         self.sourcepath = os.path.dirname(self.src)
-        print("BASEPATH: %s\nSOURCEPATH: %s" % (self.basepath, self.sourcepath))
         self.mtl = tag.attrs.get("mtl", None)
         self.loaded = False
         self.imported = False
         self.objects = []
 
-    def abs_source(self, path):
-        if "/" in path:
+    def abs_source(self, base, path):
+        base = rel2abs(self.basepath, base)
+        if path.startswith("/") or path.startswith("http://") or path.startswith("https://"):
             return path
+        elif path.startswith("../"):
+            return rel2abs(base, path)
 
-        return os.path.join(self.sourcepath, path)
+        return os.path.join(base, path)
 
     def abs_target(self, path):
         return os.path.join(self.workingpath, os.path.basename(path))
 
     # Moves resources to the working directory
-    def retrieve(self, path):
+    def retrieve(self, path, base=None):
+        if base is None:
+            base = self.basepath
+        source = self.abs_source(base, path)
+        print(source)
         target = self.abs_target(path)
-        urlreq.urlretrieve(self.abs_source(path), target)
+        urlreq.urlretrieve(source, target)
         if path.endswith(".gz"):
             with gzip.open(target, 'rb') as infile:
                 with open(target[:-3], 'wb') as outfile:
@@ -70,13 +83,14 @@ class AssetObjectObj:
 
         self.src = self.retrieve(self.src)
         if self.mtl:
+            mtlpath = os.path.dirname(self.mtl)
             self.mtl = self.retrieve(self.mtl)
             imgfiles = []
             with open(self.mtl, "r") as mtlfile:
                 imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
 
             for imgfile in imgfiles:
-                self.retrieve(imgfile)
+                self.retrieve(imgfile, mtlpath)
 
         self.loaded = True
 
