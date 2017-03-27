@@ -1,9 +1,8 @@
-# Fire: JanusVR Exporter & IPFS Publisher
+# Fire: JanusVR Importer and Exporter for Blender 3D
 
-## Description
+Fire is a Blender addon that exports the current scene to the JanusVR FireBoxHTML-format. It generates the XML description of the room automatically, exports the objects and materials and launches into JanusVR with just one click. It can also import scenes directly from your PC or websites, just give it a URL.
 
-Fire is a blender addon that exports the current scene to the JanusVR FireBoxHTML-format.
-It generates the XML description of the room automatically, exports the objects and provides instant publication over the IPFS network (no server needed!).  It can also export the room to a local destination (no ipfs required).
+It optionally also supports instant publication over the IPFS network (no server needed!).
 
 ## Requirements
 
@@ -11,12 +10,9 @@ It generates the XML description of the room automatically, exports the objects 
 
 Optional:
 - [IPFS](http://ipfs.io/docs/install/) (only required for IPFS publication)
-
-To use IPFS:
-- IPFS must be present in the PATH.
-- When not using the IPFS gateway, you need to run the IPFS daemon locally ("ipfs daemon").
-
-This addon was tested under Ubuntu/Linux and Windows. Your feedback is welcome!
+<sup>
+To use IPFS, it must be present in the PATH. When not using the IPFS gateway, you need to run the IPFS daemon locally ("ipfs daemon").
+</sup>
 
 ## Documentation
 https://firevr.readthedocs.io/en/latest/
@@ -26,6 +22,8 @@ https://firevr.readthedocs.io/en/latest/
 1. Download this repository as .zip file
 2. Blender -> User Preferences -> Addons -> Install from File -> Select the .zip, enable the addon
 
+More detailed installation instructions can be found here: https://firevr.readthedocs.io/en/latest/installation.html
+
 ## Usage
 
 1. Create your scene
@@ -33,3 +31,4 @@ https://firevr.readthedocs.io/en/latest/
 3. Blender -> 3D View -> Tool Shelf -> Misc -> Set the JanusVR and Export target directories 
 4. Click on Start JanusVR to export and launch your room in JanusVR
 
+This addon was tested under Ubuntu/Linux and Windows. Your feedback is welcome!
