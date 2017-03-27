@@ -40,6 +40,7 @@ class AssetObjectObj:
     def __init__(self, basepath, workingpath, tag):
         self.basepath = basepath
         self.workingpath = workingpath
+        self.tag = tag
         self.id = tag["id"]
         self.src = tag["src"]
         self.sourcepath = os.path.dirname(self.src)
@@ -152,6 +153,8 @@ class AssetObjectObj:
 
             obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
 
+        return list(self.objects)
+
 def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
     if filepath.startswith("http://") or filepath.startswith("https://"):
@@ -226,8 +229,11 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
     for obj in objects:
         asset = jassets.get(obj["id"])
         if asset:
-            asset.instantiate(obj)
-
+            subobjects = asset.instantiate(obj)
+            for subobject in subobjects:
+                subobject.janus_object_jsid = asset.tag.attrs.get("js_id", "")
+                subobject.janus_object_locked = asset.tag.attrs.get("locked", False)
+                subobject.janus_object_collision = asset.tag.attrs.get("collision_id", False)
 
 def load(operator, context, filepath, path_mode="AUTO", relpath="", workingpath="FireVR/tmp"):
     read_html(operator, context.scene, filepath, path_mode, workingpath)
