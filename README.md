@@ -1,11 +1,11 @@
-#Fire: JanusVR Exporter & IPFS Publisher
+# Fire: JanusVR Exporter & IPFS Publisher
 
-##Description
+## Description
 
 Fire is a blender addon that exports the current scene to the JanusVR FireBoxHTML-format.
 It generates the XML description of the room automatically, exports the objects and provides instant publication over the IPFS network (no server needed!).  It can also export the room to a local destination (no ipfs required).
 
-##Requirements
+## Requirements
 
 - [JanusVR](http://www.janusvr.com/)
 
@@ -18,15 +18,15 @@ To use IPFS:
 
 This addon was tested under Ubuntu/Linux and Windows. Your feedback is welcome!
 
-##Documentation
+## Documentation
 https://firevr.readthedocs.io/en/latest/
 
-##Installation
+## Installation
 
 1. Download this repository as .zip file
 2. Blender -> User Preferences -> Addons -> Install from File -> Select the .zip, enable the addon
 
-##Usage
+## Usage
 
 1. Create your scene
 2. Blender -> 3D View -> Tool Shelf -> Misc -> Set your room and object attributes using the panel options
