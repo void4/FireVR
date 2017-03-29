@@ -141,6 +141,7 @@ class AssetObjectObj:
             newobj = []
             for obj in self.objects:
 
+                bpy.ops.object.select_all(action='DESELECT')
                 bpy.ops.object.select_pattern(pattern=self.id)
                 bpy.ops.object.duplicate(linked=True)
                 newobj.append(bpy.context.selected_objects[0])
@@ -260,7 +261,7 @@ class AssetObjectDae(AssetObjectObj):
         else:
             newobj = []
             for obj in self.objects:
-                #bpy.ops.object.select_pattern(pattern=obj.name)
+                bpy.ops.object.select_all(action='DESELECT')
                 bpy.ops.object.select_pattern(pattern=obj.name)
                 bpy.ops.object.duplicate(linked=True)
                 newobj.append(bpy.context.selected_objects[0])
