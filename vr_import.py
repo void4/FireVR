@@ -136,12 +136,12 @@ class AssetObjectObj:
                 bpy.ops.import_scene.obj(filepath=self.src, axis_up="Y", axis_forward="Z")
             self.objects = [o for o in list(bpy.data.objects) if o not in objects]
             obj = bpy.context.selected_objects[0]
-            obj.name = tag.name
+            obj.name = self.id
         else:
             newobj = []
             for obj in self.objects:
 
-                bpy.ops.object.select_pattern(pattern=obj.name)
+                bpy.ops.object.select_pattern(pattern=self.id)
                 bpy.ops.object.duplicate(linked=True)
                 newobj.append(bpy.context.selected_objects[0])
             self.objects = newobj
@@ -157,7 +157,7 @@ class AssetObjectObj:
                 obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
 
             obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
-
+        return list(self.objects)
 def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
     if filepath.startswith("http://") or filepath.startswith("https://"):
