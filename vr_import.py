@@ -51,13 +51,15 @@ class AssetObjectObj:
 
     def abs_source(self, base, path):
         base = rel2abs(self.basepath, base)
+        if path.startswith("./"):
+            path = path[2:]
         if path.startswith("/") or path.startswith("http://") or path.startswith("https://"):
             return path
         elif path.startswith("../"):
             return rel2abs(base, path)
         if base.startswith("http://") or base.startswith("https://"):
-            return base + "/" + path
-        return os.path.join(base, path)
+            return os.path.join(base, path).replace('\\','/')
+        return os.path.join(base, path).replace('\\','/')
 
     def abs_target(self, path):
         return os.path.join(self.workingpath, os.path.basename(path))
@@ -83,34 +85,36 @@ class AssetObjectObj:
         if self.loaded:
             return
 
-        self.src = self.retrieve(self.src)
-        if self.mtl:
-            #mtlpath = os.path.dirname(self.mtl)
-            mtlpath = os.path.dirname(self.abs_source(self.basepath,self.mtl))
-            self.mtl = self.retrieve(self.mtl)
-            print(self.mtl)
-            imgfiles = []
-            with open(self.mtl, "r") as mtlfile:
-                #imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
-                imgfiles = re.findall(r"((\S*?)\.(?:jpg|jpeg|gif|png))", mtlfile.read())
+        if self.src is not None:
+            self.src = self.retrieve(self.src)
+            if self.mtl is not None:
+                #mtlpath = os.path.dirname(self.mtl)
+                mtlpath = os.path.dirname(self.abs_source(self.basepath,self.mtl))
+                self.mtl = self.retrieve(self.mtl)
+                print(self.mtl)
+                imgfiles = []
+                with open(self.mtl, "r") as mtlfile:
+                    #imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
+                    imgfiles = re.findall(r"((\S*?)\.(?:jpg|jpeg|gif|png))", mtlfile.read())
 
-            for imgfile in imgfiles:
-                self.retrieve(imgfile[0], mtlpath)
+                for imgfile in imgfiles:
+                    self.retrieve(imgfile[0], mtlpath)
 
-            # rewrite mtl to point to local file
-            with open(self.abs_target(self.mtl), "r") as mtlfile:
-                file = mtlfile.read()
-            for imgfile in imgfiles:
-                file = file.replace(imgfile[0], os.path.basename(imgfile[0]))
-            with open(self.mtl, "w") as mtlfile:
-                mtlfile.write(file)
-        self.loaded = True
+                # rewrite mtl to point to local file
+                with open(self.abs_target(self.mtl), "r") as mtlfile:
+                    file = mtlfile.read()
+                for imgfile in imgfiles:
+                    file = file.replace(imgfile[0], os.path.basename(imgfile[0]))
+                with open(self.mtl, "w") as mtlfile:
+                    mtlfile.write(file)
+            self.loaded = True
 
     #An .obj can include multiple objects!
     def instantiate(self, tag):
         print(tag)
         self.load()
         if not self.imported:
+            self.imported = True
             objects = list(bpy.data.objects)
             if self.mtl is not None:
                 # rewrite obj to point to correct mtl
@@ -125,17 +129,18 @@ class AssetObjectObj:
                             file = file + line + '\n'
                     if replaced == False:
                         file = 'mtllib ' + os.path.basename(self.mtl) + '\n' + file
-                with open(self.abs_target(self.src+"_"+os.path.basename(self.mtl)+".obj"), "w") as mtlfile:
+                with open(self.abs_target(self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj"), "w") as mtlfile:
                     mtlfile.write(file)
-                bpy.ops.import_scene.obj(filepath=self.src+"_"+os.path.basename(self.mtl)+".obj", axis_up="Y", axis_forward="Z")
+                bpy.ops.import_scene.obj(filepath=self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj", axis_up="Y", axis_forward="Z")
             else:
                 bpy.ops.import_scene.obj(filepath=self.src, axis_up="Y", axis_forward="Z")
             self.objects = [o for o in list(bpy.data.objects) if o not in objects]
-            #obj = bpy.context.selected_objects[0]
-            #obj.name = self.id
+            obj = bpy.context.selected_objects[0]
+            obj.name = tag.name
         else:
             newobj = []
             for obj in self.objects:
+
                 bpy.ops.object.select_pattern(pattern=obj.name)
                 bpy.ops.object.duplicate(linked=True)
                 newobj.append(bpy.context.selected_objects[0])
@@ -153,8 +158,6 @@ class AssetObjectObj:
 
             obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
 
-        return list(self.objects)
-
 def read_html(operator, scene, filepath, path_mode, workingpath):
     #FEATURE import from ipfs://
     if filepath.startswith("http://") or filepath.startswith("https://"):
@@ -162,17 +165,22 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
         basepath = filepath[:splitindex+1]
         basename = filepath[splitindex+1:]
     else:
-        basepath = "file://" + os.path.dirname(filepath)
+        basepath = "file:///" + os.path.dirname(filepath)
         basename = os.path.basename(filepath)
-        filepath = "file://" + filepath
+        filepath = "file:///" + filepath
 
-    source = urlreq.urlopen(filepath)
+    source = urlreq.urlopen(filepath.replace('\\','/'))
     html = source.read()
+    fireboxrooms = bs4.BeautifulSoup(html, "html.parser").findAll("fireboxroom")
+    if len(fireboxrooms) == 0:
+        # no fireboxroom, remove comments and try again
+        html = re.sub("(<!--)", "", html.decode('utf-8'), flags=re.DOTALL).encode('utf-8')
+        html = re.sub("(-->)", "", html.decode('utf-8'), flags=re.DOTALL).encode('utf-8')
     soup = bs4.BeautifulSoup(html, "html.parser")
-
     fireboxrooms = soup.findAll("fireboxroom")
+    print(str(len(fireboxrooms)))
 
-    if fireboxrooms is None:
+    if len(fireboxrooms) == 0:
         operator.report({"ERROR"}, "Could not find the FireBoxRoom tag")
         return
 
@@ -215,10 +223,17 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
         #dae might be different!
         #assets with same basename will conflict (e.g. from different domains)
         print(asset)
-
-        if asset["src"].endswith(".obj") or asset["src"].endswith(".obj.gz"):
-            jassets[asset["id"]] = AssetObjectObj(basepath, workingpath, asset)
+        
+        if asset.attrs.get("src", None) is not None:
+            print(asset['src'])
+            if asset["src"].endswith(".obj") or asset["src"].endswith(".obj.gz"):
+                jassets[asset["id"]] = AssetObjectObj(basepath, workingpath, asset)
+            elif asset["src"].endswith(".dae") or asset["src"].endswith(".dae.gz"):
+                jassets[asset["id"]] = AssetObjectDae(basepath, workingpath, asset)
+            else:
+                continue
         else:
+            print('no src')
             continue
 
     objects = room.findAll("object")
@@ -229,11 +244,74 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
     for obj in objects:
         asset = jassets.get(obj["id"])
         if asset:
-            subobjects = asset.instantiate(obj)
-            for subobject in subobjects:
-                subobject.janus_object_jsid = asset.tag.attrs.get("js_id", "")
-                subobject.janus_object_locked = asset.tag.attrs.get("locked", False)
-                subobject.janus_object_collision = asset.tag.attrs.get("collision_id", False)
+            asset.instantiate(obj)
 
+
+class AssetObjectDae(AssetObjectObj):
+    #An .obj can include multiple objects!
+    def instantiate(self, tag):
+        print(tag)
+        self.load()
+        if not self.imported:
+            self.imported = True
+            objects = list(bpy.data.objects)
+            bpy.ops.wm.collada_import(filepath=self.src)
+            self.objects = [bpy.data.objects[0]]
+        else:
+            newobj = []
+            for obj in self.objects:
+                #bpy.ops.object.select_pattern(pattern=obj.name)
+                bpy.ops.object.select_pattern(pattern=obj.name)
+                bpy.ops.object.duplicate(linked=True)
+                newobj.append(bpy.context.selected_objects[0])
+            self.objects = newobj
+
+        print(self.objects)
+        for obj in self.objects:
+            obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
+
+            if "xdir" in tag.attrs and "zdir" in tag.attrs:
+                #Matrix.Rotation(radians(-90.0), 3, 'Y')*
+                obj.rotation_euler = (Matrix([s2v(tag["xdir"]), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+            else:
+                obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
+
+            obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
+
+    def load(self):
+
+        if self.loaded:
+            return
+
+        if self.src is not None:
+            src_orig = self.abs_source(os.path.dirname(self.basepath+"0"), self.src)
+            print(src_orig)
+            self.src = self.retrieve(self.src)
+            self.parse_dae(self.src,src_orig)
+            self.loaded = True
+
+    def parse_dae(self, path, dae_url):
+        f = open(path,'r')
+        line = ''
+        output = ''
+        line = f.readline()
+        while line != '':
+            m = re.search('<init_from>(.*?)\.(jpg|png|gif|bmp)</init_from>', line)
+            if m is not None:
+                img = self.abs_source(os.path.dirname(dae_url), m.group(1)+'.'+m.group(2))
+                print(img)
+                img = self.retrieve(img, os.path.dirname(self.abs_source(self.basepath, self.src)))
+                img = img[img.rfind(os.path.sep)+1:].replace('\\','/')
+                line = re.sub('<init_from>(.*?)</init_from>', '<init_from>'+img+'</init_from>', line)
+                print(line)
+                output += line
+            else:
+                output += line
+            line = f.readline()
+        f.close()
+        f = open(path,'w')
+        f.write(output)
+        f.close()
+        
 def load(operator, context, filepath, path_mode="AUTO", relpath="", workingpath="FireVR/tmp"):
     read_html(operator, context.scene, filepath, path_mode, workingpath)
