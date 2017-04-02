@@ -19,7 +19,7 @@ https://firevr.readthedocs.io/en/latest/
 
 #### Installation
 
-1. Download this repository as .zip file
+1. Download this repository as .zip file: https://github.com/void4/FireVR/archive/master.zip
 2. Blender -> User Preferences -> Addons -> Install from File -> Select the .zip, enable the addon
 
 More detailed installation instructions can be found here: https://firevr.readthedocs.io/en/latest/installation.html
