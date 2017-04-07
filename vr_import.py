@@ -69,9 +69,12 @@ class AssetObjectObj:
         if base is None:
             base = self.basepath
         source = self.abs_source(base, path)
-        print(source)
+        print('Retrieving '+source)
         target = self.abs_target(path)
-        urlreq.urlretrieve(source, target)
+        try:
+            urlreq.urlretrieve(source, target)
+        except:
+            return
         if path.endswith(".gz"):
             with gzip.open(target, 'rb') as infile:
                 with open(target[:-3], 'wb') as outfile:
@@ -91,7 +94,7 @@ class AssetObjectObj:
                 #mtlpath = os.path.dirname(self.mtl)
                 mtlpath = os.path.dirname(self.abs_source(self.basepath,self.mtl))
                 self.mtl = self.retrieve(self.mtl)
-                print(self.mtl)
+                #print(self.mtl)
                 imgfiles = []
                 with open(self.mtl, "r") as mtlfile:
                     #imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
@@ -108,7 +111,7 @@ class AssetObjectObj:
                 with open(self.mtl, "w") as mtlfile:
                     mtlfile.write(file)
             self.loaded = True
-
+            print('Loaded asset.')
     #An .obj can include multiple objects!
     def instantiate(self, tag):
         print(tag)
@@ -117,21 +120,25 @@ class AssetObjectObj:
             self.imported = True
             objects = list(bpy.data.objects)
             if self.mtl is not None:
-                # rewrite obj to point to correct mtl
-                replaced = False
-                file = ""
-                with open(self.abs_target(self.src), "r") as mtlfile:
-                    for line in mtlfile.read().split('\n'):
-                        if line[:6] == 'mtllib':
-                            file = file + 'mtllib ' + os.path.basename(self.mtl) + '\n'
-                            replaced = True
-                        else:
-                            file = file + line + '\n'
-                    if replaced == False:
-                        file = 'mtllib ' + os.path.basename(self.mtl) + '\n' + file
-                with open(self.abs_target(self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj"), "w") as mtlfile:
-                    mtlfile.write(file)
-                bpy.ops.import_scene.obj(filepath=self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj", axis_up="Y", axis_forward="Z")
+                if self.mtl[:-4] != self.src[:-4]:
+                    print('Rewriting obj')
+                    # rewrite obj to point to correct mtl
+                    replaced = False
+                    file = ""
+                    with open(self.abs_target(self.src), "r") as mtlfile:
+                        for line in mtlfile.read().split('\n'):
+                            if line[:6] == 'mtllib':
+                                file = file + 'mtllib ' + os.path.basename(self.mtl) + '\n'
+                                replaced = True
+                            else:
+                                file = file + line + '\n'
+                        if replaced == False:
+                            file = 'mtllib ' + os.path.basename(self.mtl) + '\n' + file
+                    with open(self.abs_target(self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj"), "w") as mtlfile:
+                        mtlfile.write(file)
+                    bpy.ops.import_scene.obj(filepath=self.src[:-4]+"_"+os.path.basename(self.mtl[:-4])+".obj", axis_up="Y", axis_forward="Z")
+                else:
+                    bpy.ops.import_scene.obj(filepath=self.src, axis_up="Y", axis_forward="Z")
             else:
                 bpy.ops.import_scene.obj(filepath=self.src, axis_up="Y", axis_forward="Z")
             self.objects = [o for o in list(bpy.data.objects) if o not in objects]
@@ -153,7 +160,9 @@ class AssetObjectObj:
 
             if "xdir" in tag.attrs and "zdir" in tag.attrs:
                 #Matrix.Rotation(radians(-90.0), 3, 'Y')*
-                obj.rotation_euler = (Matrix([s2v(tag["xdir"]), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                #obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), s2v(tag.attrs.get("zdir", "0 0 1")), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                
             else:
                 obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
 
@@ -243,10 +252,12 @@ def read_html(operator, scene, filepath, path_mode, workingpath):
         return
 
     for obj in objects:
-        asset = jassets.get(obj["id"])
-        if asset:
-            asset.instantiate(obj)
-
+        try:
+            asset = jassets.get(obj["id"])
+            if asset:
+                asset.instantiate(obj)
+        except:
+            pass
 
 class AssetObjectDae(AssetObjectObj):
     #An .obj can include multiple objects!
@@ -271,9 +282,9 @@ class AssetObjectDae(AssetObjectObj):
         for obj in self.objects:
             obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
 
-            if "xdir" in tag.attrs and "zdir" in tag.attrs:
+            if "xdir" in tag.attrs or "ydir" in tag.attrs or "zdir" in tag.attrs:
                 #Matrix.Rotation(radians(-90.0), 3, 'Y')*
-                obj.rotation_euler = (Matrix([s2v(tag["xdir"]), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
             else:
                 obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
 
