@@ -38,6 +38,7 @@ def rel2abs(base, path):
 class AssetObjectObj:
 
     def __init__(self, basepath, workingpath, tag):
+        self.downloaded_imgfiles = {}
         self.basepath = basepath
         self.workingpath = workingpath
         self.tag = tag
@@ -74,7 +75,7 @@ class AssetObjectObj:
         try:
             urlreq.urlretrieve(source, target)
         except:
-            return
+            print('Error getting '+source)
         if path.endswith(".gz"):
             with gzip.open(target, 'rb') as infile:
                 with open(target[:-3], 'wb') as outfile:
@@ -99,15 +100,16 @@ class AssetObjectObj:
                 with open(self.mtl, "r") as mtlfile:
                     #imgfiles = re.findall(r"\b\w*\.(?:jpg|gif|png)", mtlfile.read())
                     imgfiles = re.findall(r"((\S*?)\.(?:jpg|jpeg|gif|png))", mtlfile.read())
-
+                
                 for imgfile in imgfiles:
-                    self.retrieve(imgfile[0], mtlpath)
+                    if imgfile[0] not in self.downloaded_imgfiles:
+                        self.downloaded_imgfiles[imgfile[0]] = self.retrieve(imgfile[0], mtlpath)
 
                 # rewrite mtl to point to local file
                 with open(self.abs_target(self.mtl), "r") as mtlfile:
                     file = mtlfile.read()
                 for imgfile in imgfiles:
-                    file = file.replace(imgfile[0], os.path.basename(imgfile[0]))
+                    file = file.replace(self.downloaded_imgfiles[imgfile[0]], os.path.basename(imgfile[0]))
                 with open(self.mtl, "w") as mtlfile:
                     mtlfile.write(file)
             self.loaded = True
@@ -122,7 +124,7 @@ class AssetObjectObj:
             if self.mtl is not None:
                 if self.mtl[:-4] != self.src[:-4]:
                     print('Rewriting obj')
-                    # rewrite obj to point to correct mtl
+                    # rewrite obj to use correct mtl
                     replaced = False
                     file = ""
                     with open(self.abs_target(self.src), "r") as mtlfile:
@@ -147,9 +149,8 @@ class AssetObjectObj:
         else:
             newobj = []
             for obj in self.objects:
-
                 bpy.ops.object.select_all(action='DESELECT')
-                bpy.ops.object.select_pattern(pattern=self.id)
+                bpy.ops.object.select_pattern(pattern=obj.name)
                 bpy.ops.object.duplicate(linked=True)
                 newobj.append(bpy.context.selected_objects[0])
             self.objects = newobj
@@ -158,10 +159,15 @@ class AssetObjectObj:
         for obj in self.objects:
             obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
 
-            if "xdir" in tag.attrs and "zdir" in tag.attrs:
-                #Matrix.Rotation(radians(-90.0), 3, 'Y')*
+            if "xdir" in tag.attrs or "ydir" in tag.attrs or "zdir" in tag.attrs:
                 #obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
-                obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), s2v(tag.attrs.get("zdir", "0 0 1")), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                xdir = s2v(tag.attrs.get("xdir", "1 0 0"))
+                zdir = s2v(tag.attrs.get("zdir", "0 0 1"))
+                if xdir[0] == zdir[2]:
+                    zdir[2] = -zdir[2]
+                if xdir[2] == zdir[0]:
+                    zdir[0] = -zdir[0]
+                obj.rotation_euler = (Matrix([xdir, zdir, s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
                 
             else:
                 obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
@@ -283,11 +289,16 @@ class AssetObjectDae(AssetObjectObj):
             obj.scale = s2v(tag.attrs.get("scale", "1 1 1"))
 
             if "xdir" in tag.attrs or "ydir" in tag.attrs or "zdir" in tag.attrs:
-                #Matrix.Rotation(radians(-90.0), 3, 'Y')*
-                obj.rotation_euler = (Matrix([s2v(tag.attrs.get("xdir", "1 0 0")), neg(s2v(tag.attrs.get("zdir", "0 0 1"))), s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                xdir = s2v(tag.attrs.get("xdir", "1 0 0"))
+                zdir = s2v(tag.attrs.get("zdir", "0 0 1"))
+                if xdir[0] == zdir[2]:
+                    zdir[2] = -zdir[2]
+                if xdir[2] == zdir[0]:
+                    zdir[0] = -zdir[0]
+                obj.rotation_euler = (Matrix([xdir, zdir, s2v(tag.attrs.get("ydir", "0 1 0"))])).to_euler()
+                
             else:
                 obj.rotation_euler = fromFwd(neg(s2v(tag.attrs.get("fwd", "0 0 1")))).to_euler()
-
             obj.location = s2p(tag.attrs.get("pos", "0 0 0"))
 
     def load(self):
