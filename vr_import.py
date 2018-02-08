@@ -91,6 +91,17 @@ class AssetObjectObj:
 
         if self.src is not None:
             self.src = self.retrieve(self.src)
+            if self.mtl is None:
+                with open(self.src,'r') as f:
+                    contents = f.read()
+                    mtllibs = re.findall(r"mtllib (.*?)", mtlfile.read())
+                    for mtllib in mtllibs:
+                        try:
+                            self.mtl = abs_source( abs_source(self.basepath, self.tag["src"]), mtllib[0])
+                        except Exception as e:
+                            print(e)
+                            self.mtl = None
+                        print(self.mtl)
             if self.mtl is not None:
                 #mtlpath = os.path.dirname(self.mtl)
                 mtlpath = os.path.dirname(self.abs_source(self.basepath,self.mtl))
